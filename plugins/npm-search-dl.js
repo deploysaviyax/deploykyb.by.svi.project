@@ -15,7 +15,7 @@ cmd({
     pattern: "mega",
     alias: ["megadl", "megafile"],
     desc: "Download a file from MEGA.nz",
-    category: "Downloader",
+    category: "Downloade",
     react: "📥",
     use: '.mega <mega.nz file URL>',
     filename: __filename
