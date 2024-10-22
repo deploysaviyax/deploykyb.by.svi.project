@@ -1,0 +1,38 @@
+{
+    "name": "saviya-x",
+    "version": "1.0.0",
+    "scripts": {
+      "start": "pm2 start start.js --deep-monitoring --attach --name Saviya",
+      "stop": "pm2 stop Saviya",
+      "restart": "pm2 restart Saviya"
+    },
+    "dependencies": {
+      "@whiskeysockets/baileys": "6.6.0",
+      "pino": "^7.0.5",
+      "pm2": "^5.3.1",
+      "util": "^0.12.4",
+      "express": "latest",
+      "axios": "^1.6.7",
+      "file_size_url": "^1.0.4",
+      "cheerio": "^1.0.0-rc.12",
+      "@bochilteam/scraper": "^4.0.22-alpha.0",
+      "file-type":"^16.5.3",
+      "mongodb": "^6.5.0",
+      "fs-extra": "^11.1.0",
+      "api-dylux": "latest",
+      "mfiredlcore-vihangayt": "^1.0.0",
+      "path": "^0.12.7",
+      "mime-types":"^2.1.35",
+      "youtubedl-core": "^4.11.4",
+      "node-fetch": "^2.6.1",
+      "megajs": "1.1.0",
+      "vm": "^0.1.0",
+      "flatted":"^3.3.1",
+      "yt-search":"2.11.1",
+      "aptoide-scraper": "^1.0.1",
+      "mongoose": "8.6.2",
+      "@vitalets/google-translate-api": "^7.0.0",
+      "qrcode-terminal": "^0.12.0"
+    }
+  }
+  
