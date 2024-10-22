@@ -693,6 +693,65 @@ if(isGroup){
 
 
 cmd({
+    pattern: "lankadeepa",
+    alias: ["lanka"],
+    desc: "Get the latest news from Lankadeepa.",
+    category: "News",
+    react: "📰",
+    use: '.lankadeepa',
+    filename: __filename
+}, async(conn, mek, m, {from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, isSaviya, groupAdmins, isBotAdmins, isAdmins, reply, react}) => {
+    try {
+
+if(isGroup){
+        const fsh = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${from}`); 
+        if(fsh &&  (fsh?.error || fsh?.data?.type == 'false')) return;
+         
+        
+    }else if(!isGroup){
+        const fshh = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${sender}`); 
+        if(fshh &&  (fshh?.error || fshh?.data?.type == 'false')) return;
+      }
+        
+        // Indicate the bot is typing
+        await conn.sendPresenceUpdate('composing', from);
+
+        // Simulate a "thinking" delay
+        const thinkingTime = Math.floor(Math.random() * 1000) + 1000; // Random delay between 1-2 seconds
+        await new Promise(resolve => setTimeout(resolve, thinkingTime));
+
+        // Construct the API URL
+        const apiUrl = `https://dark-yasiya-api-new.vercel.app/news/lankadeepa`;
+
+        // Make the API request
+        const response = await axios.get(apiUrl, { timeout: 10000 });  // 10 second timeout
+
+        // Check if the response is successful
+        if (!response.data.status) {
+            return reply("Failed to fetch the latest Lankadeepa news. Please try again later.");
+        }
+
+        // Extract the news data
+        const news = response.data.result;
+
+        // Prepare the news message
+        const newsMessage = `📰 *${news.title}*\n\n📅 Date: ${news.date}\n\n🔗 [Read More](${news.url})\n\n${news.desc}\n\n${mg.botname}`;
+
+        // Send the news message with the image
+        await conn.sendMessage(from, { image: { url: news.image }, caption: newsMessage });
+
+    } catch (e) {
+        console.log(e);
+        reply(`An error occurred: ${e.message}`);
+    } finally {
+        // Stop typing indication
+        await conn.sendPresenceUpdate('paused', from);
+    }
+});
+
+
+
+cmd({
     pattern: "sporty",
     alias: ["sportsnews"],
     desc: "Get the latest sports news.",
