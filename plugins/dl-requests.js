@@ -448,16 +448,13 @@ cmd({
 }, async (conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, isSaviya, groupAdmins, isBotAdmins, isAdmins, reply, react }) => {
     try {
 
-if(isGroup){
-        const fsh = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${from}`); 
-        if(fsh &&  (fsh?.error || fsh?.data?.type == 'false')) return;
-         
-        
-    }else if(!isGroup){
-        const fshh = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${sender}`); 
-        if(fshh &&  (fshh?.error || fshh?.data?.type == 'false')) return;
-      }
-
+        if (isGroup) {
+            const fsh = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${from}`); 
+            if (fsh && (fsh?.error || fsh?.data?.type == 'false')) return;
+        } else if (!isGroup) {
+            const fshh = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${sender}`); 
+            if (fshh && (fshh?.error || fshh?.data?.type == 'false')) return;
+        }
 
         if (!q) {
             return reply("Please provide a question for GPT. Example: .gpt What is your name?");
@@ -470,8 +467,8 @@ if(isGroup){
         const thinkingTime = Math.floor(Math.random() * (2000 - 1000 + 1)) + 1000; // Random delay between 1-2 seconds
         await new Promise(resolve => setTimeout(resolve, thinkingTime));
 
-        // Construct the API URL
-        const apiUrl = `https://prabath-md-api.up.railway.app/api/gptv4?q=${encodeURIComponent(q)}&apikey=${apikey}`;
+        // Construct the new API URL
+        const apiUrl = `https://vihangayt.is-a.dev/ai/gpt4?q=${encodeURIComponent(q)}`;
 
         // Make the API request
         const response = await axios.get(apiUrl);
@@ -495,6 +492,7 @@ if(isGroup){
         await conn.sendPresenceUpdate('paused', from);
     }
 });
+
 
 
 
