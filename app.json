@@ -1,0 +1,52 @@
+
+{
+    "name": "Movie-World (1.0.0)",
+    "description": "Movie-World has been designed to download movies using WhatsApp. 👨‍💻❤️",
+    "logo": "https://telegra.ph/file/0fd1f022ee7f484913bf0.jpg",
+    "keywords": ["nodejs", "bot", "whatsapp bot", "movie-downloader", "multi device", "movie-world"],
+    "success_url": "/",
+  
+    "env": {
+      "SESSION_ID": {
+        "description": "Put your session id.",
+        "required": true
+      },
+
+      "METHOD": {
+        "description": "Type your connection method. if you connect with qr , add 'QR', else if pair, add PAIR'.",
+        "required": true
+      } ,  
+  
+      "ALWAYS_ONLINE": {
+        "description": "Type true or false for make your whatsapp account always online or offline.",
+        "required": false
+      },
+      
+      "MAX_SIZE": {
+        "description": "Maximum size for download videos.",
+        "required": false
+      },
+
+      "OWNERNUMBER": {
+        "description": "Type your owner number.",
+        "required": false
+      },
+      
+      "BOTNUMBER": {
+        "description": "Type your bot deployed number.",
+        "required": true
+      },
+
+      "PREFIX": {
+        "description": "Type your prefix. Default is fullstop (.)",
+        "required": false
+      }
+  },
+  
+       "buildpacks": [
+          {
+              "url": "https://github.com/heroku/heroku-buildpack-nodejs.git"
+          }
+       ],
+    "stack": "heroku-22"
+  }
