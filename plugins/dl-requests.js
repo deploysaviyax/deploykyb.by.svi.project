@@ -1343,3 +1343,72 @@ if (isGroup) {
     }
 });
 
+
+cmd({
+    pattern: "xvdl",
+    alias: ["xvideos"],
+    desc: "Download or rename videos from XVideos.",
+    category: "download",
+    react: "📥",
+    use: '.xvdl <new name | XVideos video URL>',
+    filename: __filename
+},
+async (conn, mek, m, { from, quoted, args, q, reply }) => {
+
+    try {
+        // Check if the user has provided input
+        if (!q) {
+            return reply("Please provide either a new name or a valid XVideos video URL. Example: .xvdl NewTitle OR .xvdl https://www.xvideos.com/...");
+        }
+
+        const input = args[0]; // Get the first argument
+
+        // Case 1: The input is a URL
+        if (input.startsWith("https://www.xvideos.com/")) {
+            // Notify the user that the video is being downloaded
+            const { key } = await conn.sendMessage(from, { text: '*📥 Downloading your video...*' });
+
+            // Fetch video data from the XVideos API
+            const apiUrl = `https://dark-yasiya-api-new.vercel.app/download/xvideo?url=${encodeURIComponent(input)}`;
+            const response = await axios.get(apiUrl);
+
+            // Validate API response
+            if (!response.data.status || !response.data.result) {
+                return reply("Failed to fetch video data. Please check the URL or try again later.");
+            }
+
+            const { title, views, image, like, deslike, size, dl_link } = response.data.result;
+
+            // Prepare video information
+            const videoInfo = `
+────────────────────────────
+📱 *Title:* ${title}
+👁️ *Views:* ${views}
+👍 *Likes:* ${like}
+👎 *Dislikes:* ${deslike}
+📏 *Size:* ${size}
+────────────────────────────
+            `;
+
+            // Notify the user that the video is being uploaded
+            await conn.sendMessage(from, { text: '*📤 Uploading your video...*', edit: key });
+
+            // Send the video file
+            await conn.sendMessage(from, { video: { url: dl_link }, mimetype: "video/mp4", caption: videoInfo, thumbnail: { url: image } }, { quoted: mek });
+
+            // Edit the message to indicate successful upload
+            await conn.sendMessage(from, { text: "*✅ Media uploaded successfully ✅*", edit: key });
+
+        } else {
+            // Case 2: The input is a name (not a URL)
+            const newName = input; // Use the input as the new name
+
+            reply(`You have entered a new name: *${newName}*. Please provide a valid XVideos URL to download a video with this name.`);
+        }
+
+    } catch (e) {
+        console.log(e);
+        reply(`An error occurred: ${e.message}`);
+    }
+});
+
