@@ -1346,65 +1346,71 @@ if (isGroup) {
 
 cmd({
     pattern: "xvdl",
-    alias: ["xvideos"],
-    desc: "Download or rename videos from XVideos.",
+    react: "🎥",
+    alias: ["dlexvid"],
+    desc: "Download Xvideos videos using the video name or URL",
     category: "download",
-    react: "📥",
-    use: '.xvdl <new name | XVideos video URL>',
+    use: '.xvdl <Xvideos Name or URL>',
     filename: __filename
 },
-async (conn, mek, m, { from, quoted, args, q, reply }) => {
-
+async (conn, mek, m, { from, q, reply }) => {
     try {
-        // Check if the user has provided input
-        if (!q) {
-            return reply("Please provide either a new name or a valid XVideos video URL. Example: .xvdl NewTitle OR .xvdl https://www.xvideos.com/...");
-        }
+        if (!q) return reply("Please provide a video name or a valid Xvideos URL.");
 
-        const input = args[0]; // Get the first argument
+        // Check if the input is a URL or a video name
+        const isUrl = q.startsWith("http://") || q.startsWith("https://");
+        let apiUrl;
 
-        // Case 1: The input is a URL
-        if (input.startsWith("https://www.xvideos.com/")) {
-            // Notify the user that the video is being downloaded
-            const { key } = await conn.sendMessage(from, { text: '*📥 Downloading your video...*' });
-
-            // Fetch video data from the XVideos API
-            const apiUrl = `https://dark-yasiya-api-new.vercel.app/download/xvideo?url=${encodeURIComponent(input)}`;
-            const response = await axios.get(apiUrl);
-
-            // Validate API response
-            if (!response.data.status || !response.data.result) {
-                return reply("Failed to fetch video data. Please check the URL or try again later.");
-            }
-
-            const { title, views, image, like, deslike, size, dl_link } = response.data.result;
-
-            // Prepare video information
-            const videoInfo = `
-────────────────────────────
-📱 *Title:* ${title}
-👁️ *Views:* ${views}
-👍 *Likes:* ${like}
-👎 *Dislikes:* ${deslike}
-📏 *Size:* ${size}
-────────────────────────────
-            `;
-
-            // Notify the user that the video is being uploaded
-            await conn.sendMessage(from, { text: '*📤 Uploading your video...*', edit: key });
-
-            // Send the video file
-            await conn.sendMessage(from, { video: { url: dl_link }, mimetype: "video/mp4", caption: videoInfo, thumbnail: { url: image } }, { quoted: mek });
-
-            // Edit the message to indicate successful upload
-            await conn.sendMessage(from, { text: "*✅ Media uploaded successfully ✅*", edit: key });
-
+        if (isUrl) {
+            // If it's a URL, encode it and set the API URL
+            const url = encodeURI(q);
+            apiUrl = `https://dark-yasiya-api-new.vercel.app/download/xvideo?url=${url}`;
         } else {
-            // Case 2: The input is a name (not a URL)
-            const newName = input; // Use the input as the new name
+            // If it's a name, you may want to implement a search API
+            // This is a placeholder for the search implementation
+            const searchUrl = `https://your-search-api-url?query=${encodeURI(q)}`;
+            const searchResponse = await fetch(searchUrl);
+            const searchData = await searchResponse.json();
 
-            reply(`You have entered a new name: *${newName}*. Please provide a valid XVideos URL to download a video with this name.`);
+            // Handle search results (assuming the first result is what we want)
+            if (!searchData.result || searchData.result.length === 0) {
+                return reply("No results found for that name.");
+            }
+            const firstResult = searchData.result[0];
+            apiUrl = `https://dark-yasiya-api-new.vercel.app/download/xvideo?url=${firstResult.url}`;
         }
+
+        // Send initial downloading message
+        const key = await conn.sendMessage(from, { text: '*📥 Downloading your video...*' }, { quoted: mek });
+
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+
+        if (!data.status) return reply("Failed to fetch video details. Please try again.");
+
+        const { title, views, image, like, deslike, size, dl_link } = data.result;
+
+        // Prepare video information message
+        const videoInfo = `
+┌──────────────────────
+├ *✨Title:* ${title}
+├ *👁️Views:* ${views}
+├ *👍Likes:* ${like}
+├ *👎Dislikes:* ${deslike}
+├ *📏Size:* ${size}
+├ *🔗Download Link:* ${dl_link}
+└──────────────────────
+${mg.botname}
+        `;
+        await conn.sendMessage(from, { text: "*📤 Uploading your video...*" }, { quoted: key });
+        // Send video information
+        await conn.sendMessage(from, { text: videoInfo, image: { url: image } }, { quoted: mek });
+
+        // Send video
+        await conn.sendMessage(from, { video: { url: dl_link }, mimetype: "video/mp4", caption: `${title}` }, { quoted: mek });
+
+        // Edit the message to indicate success
+        await conn.sendMessage(from, { text: "*✅ Video downloaded successfully ✅*" }, { quoted: key });
 
     } catch (e) {
         console.log(e);
