@@ -1189,35 +1189,35 @@ if (isGroup) {
             if (userCheck && (userCheck?.error || userCheck?.data?.type == 'false')) return;
         }
         
-        // Ensure a query is provided
+        
         if (!q) return reply("*Please provide a keyword to search for wallpapers.*");
 
-        // Send initial searching message
+        
         const { key } = await conn.sendMessage(from, { text: '*🔍 Searching for wallpapers...*' }, { quoted: mek });
 
-        // Encode the query
+        
         const query = encodeURI(q);
         const apiUrl = `https://dark-yasiya-api-new.vercel.app/download/wallpaper?text=${query}&page=1`;
 
-        // Fetch wallpapers from the API
+        
         const response = await fetch(apiUrl);
         const data = await response.json();
 
-        // Check if any wallpapers were found
+        
         if (!data.result || data.result.length === 0) return reply("*No wallpapers found for your search query.*");
 
-        // Get the first wallpaper result
+        
         const wallpaper = data.result[0];
         const caption = `*Type:* ${wallpaper.type}\n*Source:* ${wallpaper.source}\n\n${mg.botname}`;
-        const imageUrl = wallpaper.image[0];  // High-res image
+        const imageUrl = wallpaper.image[0];  
 
-        // Send the wallpaper image
+
         await conn.sendMessage(from, {
             image: { url: imageUrl },
             caption: caption
         }, { quoted: mek });
 
-        // Edit message to "Done"
+        
         await sleep(1000);
         await conn.sendMessage(from, { text: "*✅ Wallpaper search completed successfully ✅*", edit: key });
 
@@ -1231,58 +1231,58 @@ if (isGroup) {
 cmd({
     pattern: "pinterest",
     react: "📌",
-    alias: ["pinstsearch"],
-    desc: "Search images on Pinterest by keyword",
+    alias: ["piniimg", "pinsearch"],
+    desc: "Search for Pinterest images by keyword",
     category: "search",
     use: '.pinterest <keyword>',
     filename: __filename
 },
-async (conn, mek, m, { from, quoted, args, q, reply }) => {
+async (conn, mek, m, { from, quoted, command, args, q, reply }) => {
     try {
-        // Ensure a search query is provided
-        if (!q) return reply("Please provide a keyword to search for on Pinterest.");
+       
+if (isGroup) {
+            const groupCheck = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${from}`);
+            if (groupCheck && (groupCheck?.error || groupCheck?.data?.type == 'false')) return;
+        } else {
+            const userCheck = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${sender}`);
+            if (userCheck && (userCheck?.error || userCheck?.data?.type == 'false')) return;
+        }
 
-        // Send initial searching message
-        const { key } = await conn.sendMessage(from, { text: '*🔍 Searching Pinterest for images...*' }, { quoted: mek });
+        if (!q) return reply("*Please provide a keyword to search for Pinterest images.*");
 
-        // Encode the query for the API
+        
+        const { key } = await conn.sendMessage(from, { text: '*🔍 Searching for Pinterest images...*' }, { quoted: mek });
+
+      
         const query = encodeURI(q);
         const apiUrl = `https://dark-yasiya-api-new.vercel.app/download/piniimg?text=${query}`;
-
-        // Fetch images from the API
         const response = await fetch(apiUrl);
         const data = await response.json();
 
-        // Check if data exists and has the expected structure
-        if (!data || !data.result || !Array.isArray(data.result) || data.result.length === 0) {
-            return reply("No images found for your search query on Pinterest.");
+        
+        if (!data.result || data.result.length === 0) {
+            return reply("*No Pinterest images found for your search query.*");
         }
 
-        // Limit the number of images to 5
-        const imagesToSend = data.result.slice(0, 5);
+        
+        const pinterestImage = data.result[0];
+        const imageUrl = pinterestImage.images_url;
+        const pinLink = pinterestImage.pin || "No link available";
+        const createdAt = pinterestImage.created_at || "Unknown";
+        const caption = `*Pin:* ${pinLink}\n*Created at:* ${createdAt}`;
 
-        // Loop through the images and send each one
-        for (let i = 0; i < imagesToSend.length; i++) {
-            const pinterestImage = imagesToSend[i];
+       
+        await conn.sendMessage(from, {
+            image: { url: imageUrl },
+            caption: caption
+        }, { quoted: mek });
 
-            // Check if the image URL exists
-            if (!pinterestImage || !pinterestImage.image) continue;
-
-            const caption = `*Title:* ${pinterestImage.title || 'N/A'}\n*Source:* Pinterest`;
-
-            // Send each Pinterest image
-            await conn.sendMessage(from, {
-                image: { url: pinterestImage.image.toString() }, // Convert to string for safety
-                caption: caption
-            }, { quoted: mek });
-        }
-
-        // Edit message to "Done" after sending all images
-        await sleep(1000);
-        await conn.sendMessage(from, { text: "*✅ Pinterest search completed successfully ✅*", edit: key });
+       
+        await conn.sendMessage(from, { text: "*✅ Pinterest image search completed successfully ✅*", edit: key });
 
     } catch (e) {
         console.log(e);
         reply(`An error occurred: ${e.message}`);
     }
 });
+
