@@ -1289,7 +1289,7 @@ if (isGroup) {
 
 cmd({
     pattern: "gemini",
-    alias: ["gai", "gem"],
+    alias: ["gem"],
     desc: "Ask Google Gemini AI any question.",
     category: "AI",
     react: "👾",
@@ -1317,7 +1317,7 @@ if (isGroup) {
         const thinkingTime = Math.floor(Math.random() * (2000 - 1000 + 1)) + 1000;
         await new Promise(resolve => setTimeout(resolve, thinkingTime));
 
-        // Construct the API URL with the question
+        
         const apiUrl = `https://dark-yasiya-api-new.vercel.app/ai/gemini?q=${encodeURIComponent(q)}`;
 
         
