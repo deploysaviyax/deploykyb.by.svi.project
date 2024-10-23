@@ -1269,7 +1269,7 @@ if (isGroup) {
         const imageUrl = pinterestImage.images_url;
         const pinLink = pinterestImage.pin || "No link available";
         const createdAt = pinterestImage.created_at || "Unknown";
-        const caption = `*Pin:* ${pinLink}\n*Created at:* ${createdAt}`;
+        const caption = `*Pin:* ${pinLink}\n*Created at:* ${createdAt}\n\n${mg.botname}`;
 
        
         await conn.sendMessage(from, {
@@ -1283,6 +1283,63 @@ if (isGroup) {
     } catch (e) {
         console.log(e);
         reply(`An error occurred: ${e.message}`);
+    }
+});
+
+
+cmd({
+    pattern: "gemini",
+    alias: ["gai", "gem"],
+    desc: "Ask Google Gemini AI any question.",
+    category: "AI",
+    react: "👾",
+    use: '.gemini <your question>',
+    filename: __filename
+}, async (conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, isSaviya, groupAdmins, isBotAdmins, isAdmins, reply, react }) => {
+    try {
+        
+if (isGroup) {
+            const groupCheck = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${from}`);
+            if (groupCheck && (groupCheck?.error || groupCheck?.data?.type == 'false')) return;
+        } else {
+            const userCheck = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${sender}`);
+            if (userCheck && (userCheck?.error || userCheck?.data?.type == 'false')) return;
+        }
+
+        if (!q) {
+            return reply("Please provide a question for Google Gemini AI. Example: .gemini What is the weather?");
+        }
+
+        
+        await conn.sendPresenceUpdate('composing', from);
+
+        
+        const thinkingTime = Math.floor(Math.random() * (2000 - 1000 + 1)) + 1000;
+        await new Promise(resolve => setTimeout(resolve, thinkingTime));
+
+        // Construct the API URL with the question
+        const apiUrl = `https://dark-yasiya-api-new.vercel.app/ai/gemini?q=${encodeURIComponent(q)}`;
+
+        
+        const response = await axios.get(apiUrl);
+
+        
+        if (!response.data.status) {
+            return reply("Failed to fetch a response from Google Gemini AI. Please try again later.");
+        }
+
+        
+        const geminiResponse = response.data.result;
+
+        
+        await conn.sendMessage(from, { text: geminiResponse });
+
+    } catch (e) {
+        console.error(e);
+        reply(`An error occurred: ${e.message}`);
+    } finally {
+       
+        await conn.sendPresenceUpdate('paused', from);
     }
 });
 
