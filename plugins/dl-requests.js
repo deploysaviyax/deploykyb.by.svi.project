@@ -1190,7 +1190,7 @@ if (isGroup) {
         }
         
         // Ensure a query is provided
-        if (!q) return reply("Please provide a keyword to search for wallpapers.");
+        if (!q) return reply("*Please provide a keyword to search for wallpapers.*");
 
         // Send initial searching message
         const { key } = await conn.sendMessage(from, { text: '*🔍 Searching for wallpapers...*' }, { quoted: mek });
@@ -1204,11 +1204,11 @@ if (isGroup) {
         const data = await response.json();
 
         // Check if any wallpapers were found
-        if (!data.result || data.result.length === 0) return reply("No wallpapers found for your search query.");
+        if (!data.result || data.result.length === 0) return reply("*No wallpapers found for your search query.*");
 
         // Get the first wallpaper result
         const wallpaper = data.result[0];
-        const caption = `*Type:* ${wallpaper.type}\n*Source:* ${wallpaper.source}`;
+        const caption = `*Type:* ${wallpaper.type}\n*Source:* ${wallpaper.source}\n\n${mg.botname}`;
         const imageUrl = wallpaper.image[0];  // High-res image
 
         // Send the wallpaper image
