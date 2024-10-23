@@ -1237,7 +1237,7 @@ cmd({
     use: '.pinterest <keyword>',
     filename: __filename
 },
-async (conn, mek, m, { from, quoted, command, args, q, reply }) => {
+async (conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, isSaviya, groupAdmins, isBotAdmins, isAdmins, reply, react }) => {
     try {
        
 if (isGroup) {
