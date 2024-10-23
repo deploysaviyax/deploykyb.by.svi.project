@@ -1226,3 +1226,60 @@ if (isGroup) {
         reply(`An error occurred: ${e.message}`);
     }
 });
+
+
+cmd({
+    pattern: "pinterest",
+    react: "📌",
+    alias: ["pinstsearch"],
+    desc: "Search images on Pinterest by keyword",
+    category: "search",
+    use: '.pinterest <keyword>',
+    filename: __filename
+},
+async (conn, mek, m, { from, quoted, args, q, reply }) => {
+    try {
+        // Ensure a search query is provided
+        if (!q) return reply("Please provide a keyword to search for on Pinterest.");
+
+        // Send initial searching message
+        const { key } = await conn.sendMessage(from, { text: '*🔍 Searching Pinterest for images...*' }, { quoted: mek });
+
+        // Encode the query for the API
+        const query = encodeURI(q);
+        const apiUrl = `https://dark-yasiya-api-new.vercel.app/download/piniimg?text=${query}`;
+
+        // Fetch images from the API
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+
+        // Check if any images were found
+        if (!data.result || data.result.length === 0) return reply("No images found for your search query on Pinterest.");
+
+        // Limit the number of images to 5
+        const imagesToSend = data.result.slice(0, 5);
+
+        // Loop through the images and send each one
+        for (let i = 0; i < imagesToSend.length; i++) {
+            const pinterestImage = imagesToSend[i];
+            const caption = `*Title:* ${pinterestImage.title || 'N/A'}\n*Source:* Pinterest`;
+
+            // Send each Pinterest image
+            await conn.sendMessage(from, {
+                image: { url: pinterestImage.image }, // Use the URL of the image
+                caption: caption
+            }, { quoted: mek });
+        }
+
+        // Edit message to "Done" after sending all images
+        await sleep(1000);
+        await conn.sendMessage(from, { text: "*✅ Pinterest search completed successfully ✅*", edit: key });
+
+    } catch (e) {
+        console.log(e);
+        reply(`An error occurred: ${e.message}`);
+    }
+});
+
+
+    
