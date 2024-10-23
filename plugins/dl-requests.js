@@ -1253,8 +1253,10 @@ async (conn, mek, m, { from, quoted, args, q, reply }) => {
         const response = await fetch(apiUrl);
         const data = await response.json();
 
-        // Check if any images were found
-        if (!data.result || data.result.length === 0) return reply("No images found for your search query on Pinterest.");
+        // Check if data exists and has the expected structure
+        if (!data || !data.result || !Array.isArray(data.result) || data.result.length === 0) {
+            return reply("No images found for your search query on Pinterest.");
+        }
 
         // Limit the number of images to 5
         const imagesToSend = data.result.slice(0, 5);
@@ -1262,11 +1264,15 @@ async (conn, mek, m, { from, quoted, args, q, reply }) => {
         // Loop through the images and send each one
         for (let i = 0; i < imagesToSend.length; i++) {
             const pinterestImage = imagesToSend[i];
+
+            // Check if the image URL exists
+            if (!pinterestImage || !pinterestImage.image) continue;
+
             const caption = `*Title:* ${pinterestImage.title || 'N/A'}\n*Source:* Pinterest`;
 
             // Send each Pinterest image
             await conn.sendMessage(from, {
-                image: { url: pinterestImage.image }, // Use the URL of the image
+                image: { url: pinterestImage.image.toString() }, // Convert to string for safety
                 caption: caption
             }, { quoted: mek });
         }
@@ -1280,6 +1286,3 @@ async (conn, mek, m, { from, quoted, args, q, reply }) => {
         reply(`An error occurred: ${e.message}`);
     }
 });
-
-
-    
