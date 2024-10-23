@@ -1167,3 +1167,62 @@ ${mg.botname}
         reply(`An error occurred: ${e.message}`);
     }
 });
+
+
+cmd({
+    pattern: "wallpaper",
+    react: "🖼️",
+    alias: ["wallsearch"],
+    desc: "Search for wallpapers by keyword",
+    category: "search",
+    use: '.wallpaper <keyword>',
+    filename: __filename
+},
+async (conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, isSaviya, groupAdmins, isBotAdmins, isAdmins, reply, react }) => {
+    try {
+
+if (isGroup) {
+            const groupCheck = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${from}`);
+            if (groupCheck && (groupCheck?.error || groupCheck?.data?.type == 'false')) return;
+        } else {
+            const userCheck = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${sender}`);
+            if (userCheck && (userCheck?.error || userCheck?.data?.type == 'false')) return;
+        }
+        
+        // Ensure a query is provided
+        if (!q) return reply("Please provide a keyword to search for wallpapers.");
+
+        // Send initial searching message
+        const { key } = await conn.sendMessage(from, { text: '*🔍 Searching for wallpapers...*' }, { quoted: mek });
+
+        // Encode the query
+        const query = encodeURI(q);
+        const apiUrl = `https://dark-yasiya-api-new.vercel.app/download/wallpaper?text=${query}&page=1`;
+
+        // Fetch wallpapers from the API
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+
+        // Check if any wallpapers were found
+        if (!data.result || data.result.length === 0) return reply("No wallpapers found for your search query.");
+
+        // Get the first wallpaper result
+        const wallpaper = data.result[0];
+        const caption = `*Type:* ${wallpaper.type}\n*Source:* ${wallpaper.source}`;
+        const imageUrl = wallpaper.image[0];  // High-res image
+
+        // Send the wallpaper image
+        await conn.sendMessage(from, {
+            image: { url: imageUrl },
+            caption: caption
+        }, { quoted: mek });
+
+        // Edit message to "Done"
+        await sleep(1000);
+        await conn.sendMessage(from, { text: "*✅ Wallpaper search completed successfully ✅*", edit: key });
+
+    } catch (e) {
+        console.log(e);
+        reply(`An error occurred: ${e.message}`);
+    }
+});
