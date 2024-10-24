@@ -1379,12 +1379,17 @@ async (conn, mek, m, { from, q, reply }) => {
                 return reply("Failed to parse search API response. The response is not valid JSON.");
             });
 
+            // Log the search API response for debugging
+            console.log("Search API response:", searchData);
+
             // Handle search results (assuming the first result is what we want)
             if (!searchData || !searchData.result || searchData.result.length === 0) {
                 return reply("No results found for that name.");
             }
 
             const firstResult = searchData.result[0];
+            console.log("Using search result URL:", firstResult.link); // Log the selected URL
+
             apiUrl = `https://dark-yasiya-api-new.vercel.app/download/xvideo?url=${firstResult.link}`;
         }
 
@@ -1438,6 +1443,7 @@ ${mg.botname}
         reply(`An error occurred: ${e.message}`);
     }
 });
+
 
 
 cmd({
