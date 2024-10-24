@@ -1353,34 +1353,42 @@ cmd({
     use: '.xvdl <Xvideos Name or URL>',
     filename: __filename
 },
-async (conn, mek, m, { from, q, reply }) => {
+async (conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, isSaviya, groupAdmins, isBotAdmins, isAdmins, reply, react }) => {
     try {
+
+if (isGroup) {
+            const groupCheck = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${from}`);
+            if (groupCheck && (groupCheck?.error || groupCheck?.data?.type == 'false')) return;
+        } else {
+            const userCheck = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${sender}`);
+            if (userCheck && (userCheck?.error || userCheck?.data?.type == 'false')) return;
+        }
+
         if (!q) return reply("Please provide a video name or a valid Xvideos URL.");
 
-        // Check if the input is a URL or a video name
+        
         const isUrl = q.startsWith("http://") || q.startsWith("https://");
         let apiUrl;
 
         if (isUrl) {
-            // If it's a URL, encode it and set the API URL
+           
             const url = encodeURI(q);
             apiUrl = `https://dark-yasiya-api-new.vercel.app/download/xvideo?url=${url}`;
         } else {
-            // If it's a name, you may want to implement a search API
-            // This is a placeholder for the search implementation
-            const searchUrl = `https://your-search-api-url?query=${encodeURI(q)}`;
+            
+            const searchUrl = `https://dark-yasiya-api-new.vercel.app/search/xvideo?text=${encodeURI(q)}`;
             const searchResponse = await fetch(searchUrl);
             const searchData = await searchResponse.json();
 
-            // Handle search results (assuming the first result is what we want)
+            
             if (!searchData.result || searchData.result.length === 0) {
                 return reply("No results found for that name.");
             }
             const firstResult = searchData.result[0];
-            apiUrl = `https://dark-yasiya-api-new.vercel.app/download/xvideo?url=${firstResult.url}`;
+            apiUrl = `https://dark-yasiya-api-new.vercel.app/download/xvideo?url=${firstResult.link}`;
         }
 
-        // Send initial downloading message
+        
         const key = await conn.sendMessage(from, { text: '*📥 Downloading your video...*' }, { quoted: mek });
 
         const response = await fetch(apiUrl);
@@ -1390,7 +1398,7 @@ async (conn, mek, m, { from, q, reply }) => {
 
         const { title, views, image, like, deslike, size, dl_link } = data.result;
 
-        // Prepare video information message
+        
         const videoInfo = `
 ┌──────────────────────
 ├ *✨Title:* ${title}
@@ -1402,14 +1410,17 @@ async (conn, mek, m, { from, q, reply }) => {
 └──────────────────────
 ${mg.botname}
         `;
-        await conn.sendMessage(from, { text: "*📤 Uploading your video...*" }, { quoted: key });
-        // Send video information
+
+        
         await conn.sendMessage(from, { text: videoInfo, image: { url: image } }, { quoted: mek });
 
-        // Send video
+        
+        await conn.sendMessage(from, { text: '*📤 Uploading your video...*' }, { quoted: key });
+
+       
         await conn.sendMessage(from, { video: { url: dl_link }, mimetype: "video/mp4", caption: `${title}` }, { quoted: mek });
 
-        // Edit the message to indicate success
+        
         await conn.sendMessage(from, { text: "*✅ Video downloaded successfully ✅*" }, { quoted: key });
 
     } catch (e) {
@@ -1417,4 +1428,5 @@ ${mg.botname}
         reply(`An error occurred: ${e.message}`);
     }
 });
+
 
