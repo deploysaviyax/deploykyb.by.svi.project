@@ -1425,6 +1425,68 @@ ${mg.botname}
 });
 
 
+cmd({
+    pattern: "xvs",
+    react: "🎥",
+    alias: ["xvideosearch"],
+    desc: "Search for Xvideos by query",
+    category: "search",
+    use: '.xvs <search query>',
+    filename: __filename
+}, async (conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, isSaviya, groupAdmins, isBotAdmins, isAdmins, reply, react }) => {
+    try {
+        
+  if (isGroup) {
+            const groupCheck = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${from}`);
+            if (groupCheck && (groupCheck?.error || groupCheck?.data?.type == 'false')) return;
+        } else {
+            const userCheck = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${sender}`);
+            if (userCheck && (userCheck?.error || userCheck?.data?.type == 'false')) return;
+        }
+      
+
+        
+        if (!q) return reply("Please provide a search query.");
+
+        
+        const key = await conn.sendMessage(from, { text: '*🔍 Searching for Xvideos...*' }, { quoted: mek });
+
+        
+        const query = encodeURIComponent(q); // Use encodeURIComponent for safe URL encoding
+        const apiUrl = `https://dark-yasiya-api-new.vercel.app/search/xvideo?text=${query}`;
+
+        
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+
+        
+        if (!data || !data.result || data.result.length === 0) return reply("No Xvideos found for your search query.");
+
+        
+        let videoInfo = "*Saviya-Md Xvideos Search Results:*\n\n";
+        data.result.forEach(video => {
+            videoInfo += `┌──────────────────────\n`;
+            videoInfo += `├*✨ Title:* ${video.title}\n`;
+            videoInfo += `├*👁️ Views:* ${video.views}\n`;
+            videoInfo += `├*👍 Likes:* ${video.like}\n`;
+            videoInfo += `├*👎 Dislikes:* ${video.dislike}\n`;
+            videoInfo += `├*📏 Size:* ${video.size}\n`;
+            videoInfo += `├*🔗 Video URL:* ${video.link}\n`;
+            videoInfo += `└──────────────────────\n\n`;
+        });
+
+        
+        await conn.sendMessage(from, { text: videoInfo }, { quoted: mek });
+
+        
+        await sleep(1000); 
+        await conn.sendMessage(from, { text: "*✅ Search completed successfully ✅*", edit: key });
+
+    } catch (e) {
+        console.error(e);
+        reply(`An error occurred: ${e.message}`);
+    }
+});
 
 
 
