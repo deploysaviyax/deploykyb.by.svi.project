@@ -1348,13 +1348,23 @@ if (isGroup) {
 cmd({
     pattern: "xvdl",
     react: "🎥",
-    alias: ["dlexvid"],
+    alias: ["xvid"],
     desc: "Download Xvideos videos using the video name or URL",
     category: "download",
     use: '.xvdl <Xvideos Name or URL>',
     filename: __filename
-}, async (conn, mek, m, { from, q, reply }) => {
+}, async (conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, isSaviya, groupAdmins, isBotAdmins, isAdmins, reply, react }) => {
     try {
+
+if (isGroup) {
+            const groupCheck = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${from}`);
+            if (groupCheck && (groupCheck?.error || groupCheck?.data?.type == 'false')) return;
+        } else {
+            const userCheck = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${sender}`);
+            if (userCheck && (userCheck?.error || userCheck?.data?.type == 'false')) return;
+        }
+
+
         if (!q) return reply("Please provide a video name or a valid Xvideos URL.");
 
         const isUrl = q.startsWith("http://") || q.startsWith("https://");
@@ -1403,7 +1413,7 @@ ${mg.botname}
         await conn.sendMessage(from, { text: "*📤 Uploading your video...*", edit: key });
 
         
-        await conn.sendMessage(from, { document: { url: xv_info.result.dl_link }, mimetype: "video/mp4", fileName: xv_info.result.title, caption: xv_info.result.title }, { quoted: mek });
+        await conn.sendMessage(from, { document: { url: xv_info.result.dl_link }, mimetype: "video/mp4", fileName: xv_info.result.title, caption: xv_info.result.title\n\n${mg.botname} }, { quoted: mek });
 
       
         await conn.sendMessage(from, { text: "*✅ Video uploaded successfully! ✅*", edit: key });
