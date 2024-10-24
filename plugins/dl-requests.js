@@ -1413,7 +1413,7 @@ ${mg.botname}
         await conn.sendMessage(from, { text: "*📤 Uploading your video...*", edit: key });
 
         
-        await conn.sendMessage(from, { document: { url: xv_info.result.dl_link }, mimetype: "video/mp4", fileName: xv_info.result.title, caption: xv_info.result.title\n\n `${mg.botname}` }, { quoted: mek });
+        await conn.sendMessage(from, { document: { url: xv_info.result.dl_link }, mimetype: "video/mp4", fileName: xv_info.result.title, caption: `${mg.botname}` }, { quoted: mek });
 
       
         await conn.sendMessage(from, { text: "*✅ Video uploaded successfully! ✅*", edit: key });
