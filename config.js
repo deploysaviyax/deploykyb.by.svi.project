@@ -8,7 +8,7 @@ const BOTNAME = '*`ꜱᴀᴠɪʏᴀ-x-ᴍᴅ`*';
 const FOOTERNAME = '> *ꜱᴀᴠɪʏᴀ-x-ᴍᴅ*';
 module.exports = {
 MONGODB_URI :process.env.MONGODB_URI === undefined ? 'mongodb+srv://sachintharashan26:9hVStJbuE3uxwRtZ@cluster0.o0ec025.mongodb.net/' : process.env.MONGODB_URI,
-MONGODB :process.env.MONGODB === undefined ? 'mongodb://mongo:VTVbAmCebmZDyomdyhrEqCOWsftyvygG@junction.proxy.rlwy.net:13485' : process.env.MONGODB,
+MONGODB :process.env.MONGODB === undefined ? 'mongodb+srv://saviyamd2009:saviyaxdb@saviya-x.cdial.mongodb.net/' : process.env.MONGODB,
 SESSION_ID: process.env.SESSION_ID === undefined ? 'gn9lxCzD#A_FKWp5NuAlu6h2i3nvI2qQ3K4zk2RU6dCBfExnmfQk' : process.env.SESSION_ID,
 BOTNAME : BOTNAME,
 FOOTERNAME: FOOTERNAME,
