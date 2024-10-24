@@ -1453,7 +1453,6 @@ cmd({
         // Check if the response is in JSON format
         const contentType = response.headers.get("content-type");
         if (!contentType || !contentType.includes("application/json")) {
-            // Log the non-JSON response for debugging
             const textResponse = await response.text();
             console.error("Non-JSON response:", textResponse);
             return reply("The server returned an unexpected response. Please try again later.");
@@ -1462,6 +1461,9 @@ cmd({
         // Parse the JSON response
         const data = await response.json();
 
+        // Log the entire response to inspect the structure
+        console.log("API Response:", data);
+
         // Check if the response contains results
         if (!data || !data.result || data.result.length === 0) return reply("No Xvideos found for your search query.");
 
@@ -1469,12 +1471,9 @@ cmd({
         let videoInfo = "*Saviya-Md Xvideos Search Results:*\n\n";
         data.result.forEach(video => {
             videoInfo += `┌──────────────────────\n`;
-            videoInfo += `├*✨ Title:* ${video.title}\n`;
-            videoInfo += `├*👁️ Views:* ${video.views}\n`;
-            videoInfo += `├*👍 Likes:* ${video.like}\n`;
-            videoInfo += `├*👎 Dislikes:* ${video.dislike}\n`;
-            videoInfo += `├*📏 Size:* ${video.size}\n`;
-            videoInfo += `├*🔗 Video URL:* ${video.link}\n`;
+            videoInfo += `├✨ *Title:* ${video.title || 'N/A'}\n`;
+            videoInfo += `├⏳ *Duration:* ${video.duration || 'N/A'}\n`;
+            videoInfo += `├🔗 *Video URL:* ${video.url || 'N/A'}\n`;
             videoInfo += `└──────────────────────\n\n`;
         });
 
@@ -1490,6 +1489,7 @@ cmd({
         reply(`An error occurred: ${e.message}`);
     }
 });
+
 
 
 
