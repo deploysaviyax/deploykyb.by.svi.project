@@ -1433,24 +1433,30 @@ cmd({
     category: "search",
     use: '.xvs <search query>',
     filename: __filename
-}, async (conn, mek, m, { from, q, isGroup, reply }) => {
+}, async (conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, isSaviya, groupAdmins, isBotAdmins, isAdmins, reply, react }) => {
     try {
-        // Check if the command is used in a group
-       
-        // Check if a search query is provided
+        
+   if (isGroup) {
+            const groupCheck = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${from}`);
+            if (groupCheck && (groupCheck?.error || groupCheck?.data?.type == 'false')) return;
+        } else {
+            const userCheck = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${sender}`);
+            if (userCheck && (userCheck?.error || userCheck?.data?.type == 'false')) return;
+        }    
+        
         if (!q) return reply("Please provide a search query.");
 
-        // Send initial searching message
+        
         const key = await conn.sendMessage(from, { text: '*🔍 Searching for Xvideos...*' }, { quoted: mek });
 
-        // Encode the query for URL
+        
         const query = encodeURIComponent(q); // Use encodeURIComponent for safe URL encoding
         const apiUrl = `https://dark-yasiya-api-new.vercel.app/search/xvideo?text=${query}`;
 
-        // Fetch the data from the API
+       
         const response = await fetch(apiUrl);
 
-        // Check if the response is in JSON format
+        
         const contentType = response.headers.get("content-type");
         if (!contentType || !contentType.includes("application/json")) {
             const textResponse = await response.text();
@@ -1458,16 +1464,16 @@ cmd({
             return reply("The server returned an unexpected response. Please try again later.");
         }
 
-        // Parse the JSON response
+        
         const data = await response.json();
 
-        // Log the entire response to inspect the structure
+        
         console.log("API Response:", data);
 
-        // Check if the response contains results
+        
         if (!data || !data.result || data.result.length === 0) return reply("No Xvideos found for your search query.");
 
-        // Prepare Xvideos information messages
+        
         let videoInfo = "*Saviya-Md Xvideos Search Results:*\n\n";
         data.result.forEach(video => {
             videoInfo += `┌──────────────────────\n`;
@@ -1477,11 +1483,11 @@ cmd({
             videoInfo += `└──────────────────────\n\n`;
         });
 
-        // Send video information
+       
         await conn.sendMessage(from, { text: videoInfo }, { quoted: mek });
 
-        // Edit message to indicate completion
-        await sleep(1000); // Sleep for a second before editing the message
+        
+        await sleep(1000); 
         await conn.sendMessage(from, { text: "*✅ Search completed successfully ✅*", edit: key });
 
     } catch (e) {
