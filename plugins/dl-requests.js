@@ -1430,3 +1430,69 @@ ${mg.botname}
 });
 
 
+cmd({
+    pattern: "song3",
+    react: "🎵",
+    alias: ["dlsong3"],
+    desc: "Download songs using Pink Venom API",
+    category: "download",
+    use: '.song3 <YouTube URL>',
+    filename: __filename
+},
+async (conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, isSaviya, groupAdmins, isBotAdmins, isAdmins, reply, react }) => {
+    try {
+        
+if (isGroup) {
+            const groupCheck = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${from}`);
+            if (groupCheck && (groupCheck?.error || groupCheck?.data?.type == 'false')) return;
+        } else {
+            const userCheck = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${sender}`);
+            if (userCheck && (userCheck?.error || userCheck?.data?.type == 'false')) return;
+        }
+
+        if (!q) return reply("Please provide a valid YouTube URL.");
+
+        
+        const { key } = await conn.sendMessage(from, { text: '*📥 Downloading your song...*'}, { quoted: mek });
+
+       
+        const url = encodeURIComponent(q);
+        const apiUrl = `https://api-pink-venom.vercel.app/api/ytdl?url=${url}`;
+
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+
+        
+        if (!data || data.status !== "success") return reply("Failed to fetch song details. Please try again later.");
+
+        const { title, size, download_url } = data;
+
+ 
+        const songInfo = `
+┌───────────────────
+├ *🎶 Title:* ${title}
+├ *📏 Size:* ${size}
+├ *🔗 Download URL:* ${download_url}
+└───────────────────
+${config.botname}
+        `;
+        await conn.sendMessage(from, { text: songInfo }, { quoted: mek });
+
+        
+        await conn.sendMessage(from, { text: '*📤 Uploading your song...*' }, { quoted: mek, edit: key });
+
+        
+        await conn.sendMessage(from, { audio: { url: download_url }, mimetype: "audio/mpeg" }, { quoted: mek });
+
+        
+        await conn.sendMessage(from, { document: { url: download_url }, mimetype: "audio/mpeg", fileName: `${title}.mp3` }, { quoted: mek });
+
+        
+        await conn.sendMessage(from, { text: "*✅ Media uploaded successfully ✅*", edit: key });
+
+    } catch (error) {
+        console.error(error);
+        reply(`An error occurred: ${error.message}`);
+    }
+});
+
