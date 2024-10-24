@@ -1394,11 +1394,11 @@ if (isGroup) {
         const msg = `
 🔞 _SAVIYA XVIDEO DOWNLOADER_ 🔞
 ┌──────────────────────
-├*✨ Title:* ${xv_info.result.title}
-├*👁️ Views:* ${xv_info.result.views}
-├*👍 Likes:* ${xv_info.result.like}
-├*👎 Dislikes:* ${xv_info.result.dislike} 
-├*📏 Size:* ${xv_info.result.size}
+├ *✨ Title:* ${xv_info.result.title}
+├ *👁️ Views:* ${xv_info.result.views}
+├ *👍 Likes:* ${xv_info.result.like}
+├ *👎 Dislikes:* ${xv_info.result.dislike} 
+├ *📏 Size:* ${xv_info.result.size}
 └──────────────────────
 ${mg.botname}
 `;
