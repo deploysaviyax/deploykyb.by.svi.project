@@ -1353,52 +1353,61 @@ cmd({
     use: '.xvdl <Xvideos Name or URL>',
     filename: __filename
 },
-async (conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, isSaviya, groupAdmins, isBotAdmins, isAdmins, reply, react }) => {
+async (conn, mek, m, { from, q, reply }) => {
     try {
-
-if (isGroup) {
-            const groupCheck = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${from}`);
-            if (groupCheck && (groupCheck?.error || groupCheck?.data?.type == 'false')) return;
-        } else {
-            const userCheck = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${sender}`);
-            if (userCheck && (userCheck?.error || userCheck?.data?.type == 'false')) return;
-        }
-
         if (!q) return reply("Please provide a video name or a valid Xvideos URL.");
 
-        
+        // Check if the input is a URL or a video name
         const isUrl = q.startsWith("http://") || q.startsWith("https://");
         let apiUrl;
 
         if (isUrl) {
-           
+            // If it's a URL, encode it and set the API URL
             const url = encodeURI(q);
             apiUrl = `https://dark-yasiya-api-new.vercel.app/download/xvideo?url=${url}`;
         } else {
-            
+            // If it's a name, perform a search query using the search API
             const searchUrl = `https://dark-yasiya-api-new.vercel.app/search/xvideo?text=${encodeURI(q)}`;
             const searchResponse = await fetch(searchUrl);
-            const searchData = await searchResponse.json();
 
-            
-            if (!searchData.result || searchData.result.length === 0) {
+            // Check if the response is OK (status 200)
+            if (!searchResponse.ok) {
+                return reply(`Search API returned an error: ${searchResponse.statusText}`);
+            }
+
+            const searchData = await searchResponse.json().catch((err) => {
+                return reply("Failed to parse search API response. The response is not valid JSON.");
+            });
+
+            // Handle search results (assuming the first result is what we want)
+            if (!searchData || !searchData.result || searchData.result.length === 0) {
                 return reply("No results found for that name.");
             }
+
             const firstResult = searchData.result[0];
             apiUrl = `https://dark-yasiya-api-new.vercel.app/download/xvideo?url=${firstResult.link}`;
         }
 
-        
-        const key = await conn.sendMessage(from, { text: '*📥 Downloading your video...*' }, { quoted: mek });
+        // Send initial "Downloading" message
+        const { key } = await conn.sendMessage(from, { text: '*📥 Downloading your video...*' }, { quoted: mek });
 
+        // Fetch video details
         const response = await fetch(apiUrl);
-        const data = await response.json();
+
+        // Check if the response is OK (status 200)
+        if (!response.ok) {
+            return reply(`Download API returned an error: ${response.statusText}`);
+        }
+
+        const data = await response.json().catch((err) => {
+            return reply("Failed to parse download API response. The response is not valid JSON.");
+        });
 
         if (!data.status) return reply("Failed to fetch video details. Please try again.");
 
         const { title, views, image, like, deslike, size, dl_link } = data.result;
 
-        
+        // Prepare video information message
         const videoInfo = `
 ┌──────────────────────
 ├ *✨Title:* ${title}
@@ -1411,17 +1420,18 @@ if (isGroup) {
 ${mg.botname}
         `;
 
-        
+        // Send "Uploading" message (not editing the initial message)
+        const uploadMsg = await conn.sendMessage(from, { text: '*📤 Uploading your video...*', edit: key });
+
+        // Send video information with the image
         await conn.sendMessage(from, { text: videoInfo, image: { url: image } }, { quoted: mek });
 
-        
-        await conn.sendMessage(from, { text: '*📤 Uploading your video...*' }, { quoted: key });
-
-       
+        // Send the video
         await conn.sendMessage(from, { video: { url: dl_link }, mimetype: "video/mp4", caption: `${title}` }, { quoted: mek });
 
-        
-        await conn.sendMessage(from, { text: "*✅ Video downloaded successfully ✅*" }, { quoted: key });
+        // Send "Success" message after upload
+        await sleep(1000);
+        await conn.sendMessage(from, { text: "*✅ Video uploaded successfully!*", edit: key });
 
     } catch (e) {
         console.log(e);
