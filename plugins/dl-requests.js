@@ -1372,18 +1372,13 @@ cmd({
                 return reply(`Search API returned an error: ${searchResponse.statusText}`);
             }
 
-            const searchData = await searchResponse.json().catch(err => {
-                console.error("Error parsing search response:", err);
-                return null;
-            });
-
+            const searchData = await searchResponse.json();
             console.log("Search API response:", searchData); // Log the response
 
             if (!searchData || !searchData.result || searchData.result.length === 0) {
                 return reply("No results found for that name.");
             }
 
-            // Select the first result for downloading
             const firstResult = searchData.result[0];
             apiUrl = `https://dark-yasiya-api-new.vercel.app/download/xvideo?url=${firstResult.link}`;
         }
@@ -1393,18 +1388,11 @@ cmd({
 
         const response = await fetch(apiUrl);
         if (!response.ok) {
-            // Log response for debugging
-            const errorMessage = await response.text();
-            console.error("Download API response:", errorMessage);
             return reply(`Download API returned an error: ${response.statusText}`);
         }
 
-        const data = await response.json().catch(err => {
-            console.error("Error parsing download response:", err);
-            return null;
-        });
-
-        if (!data || !data.status || !data.result) {
+        const data = await response.json();
+        if (!data || !data.result) {
             return reply("Failed to fetch video details. Please try again.");
         }
 
@@ -1415,21 +1403,22 @@ cmd({
         await conn.sendMessage(from, { text: '*📤 Uploading your video...*', edit: key });
 
         // Send video information
-        const videoInfo = `\
-┌──────────────────────\
-├ *✨ Title:* ${title}\
-├ *👁️ Views:* ${views}\
-├ *👍 Likes:* ${like}\
-├ *👎 Dislikes:* ${dislike}\
-├ *📏 Size:* ${size}\
-├ *🔗 Download Link:* ${dl_link}\
-└──────────────────────\
-${mg.botname}`;
-
+        const videoInfo = `
+┌──────────────────────
+├ *✨ Title:* ${title}
+├ *👁️ Views:* ${views}
+├ *👍 Likes:* ${like}
+├ *👎 Dislikes:* ${dislike}
+├ *📏 Size:* ${size}
+├ *🔗 Download Link:* ${dl_link}
+└──────────────────────
+${mg.botname}
+        `;
+        
         await conn.sendMessage(from, { text: videoInfo, image: { url: image } }, { quoted: mek });
 
         // Send the video
-        await conn.sendMessage(from, { video: { url: dl_link }, mimetype: "video/mp4", caption: title }, { quoted: mek });
+        await conn.sendMessage(from, { video: { url: dl_link }, mimetype: "video/mp4", caption: `${title}` }, { quoted: mek });
 
         // Edit the upload message to indicate success
         await conn.sendMessage(from, { text: "*✅ Video uploaded successfully ✅*", edit: key });
