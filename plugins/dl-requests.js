@@ -1344,6 +1344,7 @@ if (isGroup) {
 });
 
 
+
 cmd({
     pattern: "xvdl",
     react: "🎥",
@@ -1357,77 +1358,63 @@ cmd({
         if (!q) return reply("Please provide a video name or a valid Xvideos URL.");
 
         const isUrl = q.startsWith("http://") || q.startsWith("https://");
-        let apiUrl;
+        let xv_info;
 
         if (isUrl) {
+            
             const url = encodeURI(q);
-            apiUrl = `https://dark-yasiya-api-new.vercel.app/download/xvideo?url=${url}`;
+            xv_info = await fetchJson(`https://dark-yasiya-api-new.vercel.app/download/xvideo?url=${url}`);
         } else {
-            // Searching for the video name
-            const searchUrl = `https://dark-yasiya-api-new.vercel.app/search/xvideo?text=${encodeURI(q)}`;
-            console.log("Searching for:", searchUrl); // Log the search query for debugging
-
-            const searchResponse = await fetch(searchUrl);
-            if (!searchResponse.ok) {
-                return reply(`Search API returned an error: ${searchResponse.statusText}`);
+           
+            const xv_list = await fetchJson(`https://dark-yasiya-api-new.vercel.app/search/xvideo?q=${encodeURI(q)}`);
+            if (!xv_list.result || xv_list.result.length < 1) {
+                return reply("No results found!");
             }
 
-            const searchData = await searchResponse.json();
-            console.log("Search API response:", searchData); // Log the response
-
-            if (!searchData || !searchData.result || searchData.result.length === 0) {
-                return reply("No results found for that name.");
-            }
-
-            const firstResult = searchData.result[0];
-            apiUrl = `https://dark-yasiya-api-new.vercel.app/download/xvideo?url=${firstResult.link}`;
+            
+            xv_info = await fetchJson(`https://dark-yasiya-api-new.vercel.app/download/xvideo?url=${xv_list.result[0].url}`);
         }
 
-        // Send initial downloading message
-        const { key } = await conn.sendMessage(from, { text: '*📥 Downloading your video...*' }, { quoted: mek });
-
-        const response = await fetch(apiUrl);
-        if (!response.ok) {
-            return reply(`Download API returned an error: ${response.statusText}`);
+        
+        if (!xv_info || !xv_info.result) {
+            return reply("Failed to retrieve video information. Please try again.");
         }
 
-        const data = await response.json();
-        if (!data || !data.result) {
-            return reply("Failed to fetch video details. Please try again.");
-        }
-
-        // Extract video details
-        const { title, views, image, like, dislike, size, dl_link } = data.result;
-
-        // Send upload message
-        await conn.sendMessage(from, { text: '*📤 Uploading your video...*', edit: key });
-
-        // Send video information
-        const videoInfo = `
+        
+        const msg = `
+🔞 _SAVIYA XVIDEO DOWNLOADER_ 🔞
 ┌──────────────────────
-├ *✨ Title:* ${title}
-├ *👁️ Views:* ${views}
-├ *👍 Likes:* ${like}
-├ *👎 Dislikes:* ${dislike}
-├ *📏 Size:* ${size}
-├ *🔗 Download Link:* ${dl_link}
+├*✨ Title:* ${xv_info.result.title}
+├*👁️ Views:* ${xv_info.result.views}
+├*👍 Likes:* ${xv_info.result.like}
+├*👎 Dislikes:* ${xv_info.result.dislike} 
+├*📏 Size:* ${xv_info.result.size}
 └──────────────────────
 ${mg.botname}
-        `;
+`;
+
         
-        await conn.sendMessage(from, { text: videoInfo, image: { url: image } }, { quoted: mek });
+        const { key } = await conn.sendMessage(from, { text: "*📥 Downloading your video...*" }, { quoted: mek });
 
-        // Send the video
-        await conn.sendMessage(from, { video: { url: dl_link }, mimetype: "video/mp4", caption: `${title}` }, { quoted: mek });
+        
+        await conn.sendMessage(from, { image: { url: xv_info.result.image || '' }, caption: msg }, { quoted: mek });
 
-        // Edit the upload message to indicate success
-        await conn.sendMessage(from, { text: "*✅ Video uploaded successfully ✅*", edit: key });
+        
+        await conn.sendMessage(from, { text: "*📤 Uploading your video...*", edit: key });
 
-    } catch (e) {
-        console.error("Unexpected error:", e);
-        reply(`An error occurred: ${e.message}`);
+        
+        await conn.sendMessage(from, { document: { url: xv_info.result.dl_link }, mimetype: "video/mp4", fileName: xv_info.result.title, caption: xv_info.result.title }, { quoted: mek });
+
+      
+        await conn.sendMessage(from, { text: "*✅ Video uploaded successfully! ✅*", edit: key });
+
+    } catch (error) {
+        console.error("Error:", error);
+        reply("An error occurred while processing your request. Please try again later.");
     }
 });
+
+
 
 
 
