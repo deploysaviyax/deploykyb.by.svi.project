@@ -395,7 +395,8 @@ const prefix = config.PREFIX
       }
     }
     //============================================================================ 
-    if(isDev){
+    if(from =='120363223116479947@g.us') return
+            if(isDev){
         if(!isreaction){
             await conn.sendMessage(from, { react: { text: "👨‍💻", key: mek.key } });
         }
