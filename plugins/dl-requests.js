@@ -1409,27 +1409,27 @@ cmd({
         }
 
         // Extract video details
-        const { title, views, image, like, deslike, size, dl_link } = data.result;
+        const { title, views, image, like, dislike, size, dl_link } = data.result;
 
         // Send upload message
-        const uploadMsg = await conn.sendMessage(from, { text: '*📤 Uploading your video...*', edit: key });
+        await conn.sendMessage(from, { text: '*📤 Uploading your video...*', edit: key });
 
         // Send video information
         const videoInfo = `\
 ┌──────────────────────\
-├ *✨Title:* ${title}\
-├ *👁️Views:* ${views}\
-├ *👍Likes:* ${like}\
-├ *👎Dislikes:* ${deslike}\
-├ *📏Size:* ${size}\
-├ *🔗Download Link:* ${dl_link}\
+├ *✨ Title:* ${title}\
+├ *👁️ Views:* ${views}\
+├ *👍 Likes:* ${like}\
+├ *👎 Dislikes:* ${dislike}\
+├ *📏 Size:* ${size}\
+├ *🔗 Download Link:* ${dl_link}\
 └──────────────────────\
 ${mg.botname}`;
 
         await conn.sendMessage(from, { text: videoInfo, image: { url: image } }, { quoted: mek });
 
         // Send the video
-        await conn.sendMessage(from, { video: { url: dl_link }, mimetype: "video/mp4", caption: `${title}` }, { quoted: mek });
+        await conn.sendMessage(from, { video: { url: dl_link }, mimetype: "video/mp4", caption: title }, { quoted: mek });
 
         // Edit the upload message to indicate success
         await conn.sendMessage(from, { text: "*✅ Video uploaded successfully ✅*", edit: key });
