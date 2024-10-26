@@ -337,3 +337,54 @@ if (isGroup) {
 });
 
 
+cmd({
+    pattern: "mfire2",
+    alias: ["mediafire2"],
+    desc: "Download files from MediaFire using the DarkYasiya API",
+    react: "📁",
+    category: "download",
+    filename: __filename
+},
+async (conn, mek, m, { from, q, reply }) => {
+    try {
+       
+        if (!q || !q.startsWith("https://")) {
+            return await reply("Please provide a valid MediaFire URL.");
+        }
+
+       
+        const { key } = await conn.sendMessage(from, { text: '*📥 Downloading your file...*' });
+
+        
+        const response = await fetchJson(`https://dark-yasiya-api-new.vercel.app/download/mfire?url=${encodeURIComponent(q)}`);
+        
+        
+        if (!response.status || !response.result?.dl_link) {
+            return await reply("Failed to fetch file data. Please check the URL or try again later.");
+        }
+
+        
+        const { dl_link: downloadLink, fileName, fileType, size } = response.result;
+
+        
+        await conn.sendMessage(from, { text: `*📤 Uploading your file...*`, edit: key });
+
+       
+        const fileBuffer = await axios.get(downloadLink, { responseType: 'arraybuffer' }).then(res => Buffer.from(res.data, 'binary'));
+
+       
+        await conn.sendMessage(from, {
+            document: fileBuffer,
+            mimetype: fileType,
+            fileName: fileName,
+            caption: `*File:* ${fileName}\n*Size:* ${size}\n\n${mg.botname}`
+        }, { quoted: mek });
+
+       
+        await conn.sendMessage(from, { text: "*✅ Media uploaded successfully ✅*", edit: key });
+
+    } catch (e) {
+        console.error(e);
+        await reply(`An error occurred: ${e.message}`);
+    }
+});
