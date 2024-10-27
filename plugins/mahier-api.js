@@ -21,10 +21,20 @@ cmd({
 },
 async (conn, mek, m, { from, reply, quoted }) => {
     try {
-        // Check if the command is used with a quoted message
-        const textToConvert = quoted && quoted.type === 'conversation' ? quoted.text : m.text.replace(/^\.\w+\s*/, '');
+        // Initialize the text to convert
+        let textToConvert;
 
-        if (!textToConvert) return reply("*Please provide text to generate a QR code, or quote a message.*");
+        // Check if there's a quoted message
+        if (quoted && quoted.type === 'conversation') {
+            textToConvert = quoted.text; // Get text from the quoted message
+        } else {
+            textToConvert = m.text.replace(/^\.\w+\s*/, ''); // Get text from the command message
+        }
+
+        // Validate the extracted text
+        if (!textToConvert) {
+            return reply("*Please provide text to generate a QR code, or quote a message.*");
+        }
 
         // Send a loading message and save the key for editing later
         const { key } = await conn.sendMessage(from, { text: '*🔍 Generating QR code...*' }, { quoted: mek });
@@ -45,13 +55,10 @@ async (conn, mek, m, { from, reply, quoted }) => {
         // Assuming the QR code URL is returned in data.qrCodeUrl
         const qrCodeUrl = data.qrCodeUrl; // Adjust based on actual response structure
 
-        // Logo URL to be sent along with the QR code
-       
-
-        // Send the QR code image and logo
+        // Send the QR code image
         await conn.sendMessage(from, {
             image: { url: qrCodeUrl },
-            caption: `*QR Code for:* ${textToConvert}\n\n![Logo](${logoUrl})`
+            caption: `*QR Code for:* ${textToConvert}`
         }, { quoted: mek });
 
         // Edit the previous loading message to indicate completion
@@ -62,4 +69,3 @@ async (conn, mek, m, { from, reply, quoted }) => {
         reply(`An error occurred: ${e.message}`);
     }
 });
-
