@@ -12,47 +12,49 @@ const  bot = config.BOTNUMBER;
 
 cmd({
     pattern: "meta",
-    alias: ["llama"],
-    desc: "Ask Meta LLaMA 2 AI any question.",
+    alias: ["metaai"],
+    desc: "Ask Meta AI any question.",
     category: "AI",
-    react: "🤖",
+    react: "🧠",
     use: '.meta <your question>',
     filename: __filename
-}, async (conn, mek, m, { from, q, isGroup, sender, reply }) => {
+}, async (conn, mek, m, { from, q, reply }) => {
     try {
-        
-        // Ensure question is provided
+       
         if (!q) {
-            return await reply("Please provide a question for Meta LLaMA 2 AI. Example: .meta What is AI?");
+            return reply("Please provide a question for Meta AI. Example: .meta What is your name?");
         }
 
-        // Send typing indicator
+       
         await conn.sendPresenceUpdate('composing', from);
 
-        // Define API endpoint and key
-        const apiKey = 'free_key@maher_apis';
-        const apiUrl = `https://api.nexoracle.com/ai/meta-llama2?apikey=${apiKey}&prompt=${encodeURIComponent(q)}`;
+        
+        const thinkingTime = Math.floor(Math.random() * (2000 - 1000 + 1)) + 1000; 
+        await new Promise(resolve => setTimeout(resolve, thinkingTime));
 
-        // Fetch response from the API
+        
+        const apiUrl = `https://api.nexoracle.com/ai/meta-llama2?apikey=free_key@maher_apis&prompt=${encodeURIComponent(q)}`;
+
+        
         const response = await axios.get(apiUrl);
 
-        // Check if the response is successful
-        if (response.status === 200 && response.data.result) {
-            await conn.sendMessage(from, { text: response.data.result });
-        } else {
-            // Handle forbidden or failed requests
-            if (response.status === 403) {
-                await reply("Authorization error: Invalid or expired API key. Please verify the API key.");
-            } else {
-                await reply("Failed to fetch a response from Meta LLaMA 2 AI. Please try again later.");
-            }
+       
+        if (response.data.status !== 200) {
+            return reply("Failed to fetch a response from Meta AI. Please try again later.");
         }
 
+       
+        const metaResponse = response.data.result;
+
+        
+        await conn.sendMessage(from, { text: metaResponse });
+
     } catch (e) {
-        console.error(e);
-        await reply(`An error occurred: ${e.message}`);
+        console.log(e);
+        reply(`An error occurred: ${e.message}`);
     } finally {
-        // End typing indicator
+        
         await conn.sendPresenceUpdate('paused', from);
     }
 });
+
