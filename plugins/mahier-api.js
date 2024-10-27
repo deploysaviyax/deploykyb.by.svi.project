@@ -11,50 +11,54 @@ const  bot = config.BOTNUMBER;
 
 
 cmd({
-    pattern: "meta",
-    alias: ["metaai"],
-    desc: "Ask Meta AI any question.",
-    category: "AI",
-    react: "🧠",
-    use: '.meta <your question>',
+    pattern: "toqr",
+    react: "📱",
+    alias: ["qr"],
+    desc: "Generate a QR code from quoted text",
+    category: "utility",
+    use: '.toqr <text> or reply to a message',
     filename: __filename
-}, async (conn, mek, m, { from, q, reply }) => {
+},
+async (conn, mek, m, { from, reply, quoted }) => {
     try {
-       
-        if (!q) {
-            return reply("Please provide a question for Meta AI. Example: .meta What is your name?");
+        
+        const textToConvert = quoted && quoted.type === 'conversation' ? quoted.text : m.text;
+
+        if (!textToConvert) return reply("*Please provide text to generate a QR code, or quote a message.*");
+
+        
+        const { key } = await conn.sendMessage(from, { text: '*🔍 Generating QR code...*' }, { quoted: mek });
+
+        
+        const apiUrl = `https://api.nexoracle.com/misc/generate-qr?apikey=free_key@maher_apis&text=${encodeURIComponent(textToConvert)}`;
+
+        
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+
+        
+        if (data.error) {
+            await conn.sendMessage(from, { text: `*Error generating QR code:* ${data.error}`, edit: key });
+            return;
         }
 
-       
-        await conn.sendPresenceUpdate('composing', from);
+        
+        const qrCodeUrl = data.qrCodeUrl; 
 
         
-        const thinkingTime = Math.floor(Math.random() * (2000 - 1000 + 1)) + 1000; 
-        await new Promise(resolve => setTimeout(resolve, thinkingTime));
-
         
-        const apiUrl = `https://api.nexoracle.com/ai/meta-llama2?apikey=free_key@maher_apis&prompt=${encodeURIComponent(q)}`;
-
-        
-        const response = await axios.get(apiUrl);
 
        
-        if (response.data.status !== 200) {
-            return reply("Failed to fetch a response from Meta AI. Please try again later.");
-        }
+        await conn.sendMessage(from, {
+            image: { url: qrCodeUrl },
+            caption: `*QR Code for:* ${textToConvert}\n\n${mg.botname}`
+        }, { quoted: mek });
 
        
-        const metaResponse = response.data.result;
-
-        
-        await conn.sendMessage(from, { text: metaResponse });
+        await conn.sendMessage(from, { text: "*✅ QR code generated successfully! ✅*", edit: key });
 
     } catch (e) {
         console.log(e);
         reply(`An error occurred: ${e.message}`);
-    } finally {
-        
-        await conn.sendPresenceUpdate('paused', from);
     }
 });
-
