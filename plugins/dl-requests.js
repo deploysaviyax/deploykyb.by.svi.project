@@ -1074,39 +1074,46 @@ cmd({
 cmd({
     pattern: "song3",
     react: "🎶",
-    alias: ["dlsong3","ytmp3"],
-    desc: "Download songs using Prabath's mp3v2 API",
+    alias: ["dlsong3", "ytmp3"],
+    desc: "Download songs by name or URL using Prabath's mp3v2 API",
     category: "download",
-    use: '.song3 <YouTube URL>',
+    use: '.song3 <YouTube URL> or .song3 <Song Name>',
     filename: __filename
 },
-async (conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, isSaviya, groupAdmins, isBotAdmins, isAdmins, reply, react }) => {
+async (conn, mek, m, { from, args, reply }) => {
     try {
+        const q = args.join(" ");
+        if (!q) return reply('*Please provide a YouTube URL or song name to search.*');
 
- if (isGroup) {
-            const groupCheck = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${from}`);
-            if (groupCheck && (groupCheck?.error || groupCheck?.data?.type == 'false')) return;
+        let videoUrl;
+        
+        // Check if the input is a URL
+        if (q.startsWith("https://")) {
+            videoUrl = q;
         } else {
-            const userCheck = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${sender}`);
-            if (userCheck && (userCheck?.error || userCheck?.data?.type == 'false')) return;
+            // Search YouTube for the song name and get the first result
+            const yts = require("yt-search");
+            const searchResults = await yts(q);
+            const firstResult = searchResults.all[0];
+
+            if (!firstResult) return reply("No results found. Please try a different query.");
+
+            videoUrl = firstResult.url; // Get the first result's URL
         }
 
-        const q = args[0];
-        if (!q) return reply("Please provide a YouTube URL.");
-
-        
+        // Send initial downloading message
         const { key } = await conn.sendMessage(from, { text: '*📥 Downloading your song...*' }, { quoted: mek });
 
-        
-        const apiUrl = `https://prabath-ytdl-scrapper.koyeb.app/api/mp3v2?url=${encodeURIComponent(q)}`;
+        // API request to download song
+        const apiUrl = `https://prabath-ytdl-scrapper.koyeb.app/api/mp3v2?url=${encodeURIComponent(videoUrl)}`;
         const response = await fetch(apiUrl);
         const data = await response.json();
 
         if (!data.status) return reply("Failed to fetch song details. Please try again.");
 
-        const { title, dl_link, file_size = "Unknown" } = data;  
+        const { title, dl_link, file_size = "Unknown" } = data;
 
-        
+        // Song information message
         const songInfo = `
 ┌───────────────────
 ├ *✨Title:* ${title}
@@ -1117,14 +1124,14 @@ ${mg.botname}
         `;
         await conn.sendMessage(from, { text: songInfo }, { quoted: mek });
 
-        
+        // Edit to uploading status and send audio
         await conn.sendMessage(from, { text: '*📤 Uploading your song...*', edit: key });
         await conn.sendMessage(from, { audio: { url: dl_link }, mimetype: "audio/mpeg" }, { quoted: mek });
 
-       
+        // Send as document with metadata
         await conn.sendMessage(from, { document: { url: dl_link }, mimetype: "audio/mpeg", fileName: `${title}.mp3`, caption: `${mg.botname}` }, { quoted: mek });
 
-        
+        // Final success confirmation
         await sleep(1000);
         await conn.sendMessage(from, { text: "*✅ Media uploaded successfully ✅*", edit: key });
 
