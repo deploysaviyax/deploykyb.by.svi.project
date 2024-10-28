@@ -1168,67 +1168,54 @@ ${mg.botname}
 
 cmd({
     pattern: "song3",
-    react: "🎵",
+    react: "🎶",
     alias: ["dlsong3"],
-    desc: "Download songs using Pink Venom API",
+    desc: "Download songs using Prabath's mp3v2 API",
     category: "download",
     use: '.song3 <YouTube URL>',
     filename: __filename
 },
-async (conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, isSaviya, groupAdmins, isBotAdmins, isAdmins, reply, react }) => {
+async (conn, mek, m, { from, args, reply }) => {
     try {
-        
-if (isGroup) {
-            const groupCheck = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${from}`);
-            if (groupCheck && (groupCheck?.error || groupCheck?.data?.type == 'false')) return;
-        } else {
-            const userCheck = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${sender}`);
-            if (userCheck && (userCheck?.error || userCheck?.data?.type == 'false')) return;
-        }
+        const q = args[0];
+        if (!q) return reply("Please provide a YouTube URL.");
 
-        if (!q) return reply("Please provide a valid YouTube URL.");
+        // Send initial downloading message
+        const { key } = await conn.sendMessage(from, { text: '*📥 Downloading your song...*' }, { quoted: mek });
 
-        
-        const { key } = await conn.sendMessage(from, { text: '*📥 Downloading your song...*'}, { quoted: mek });
-
-       
-        const url = encodeURIComponent(q);
-        const apiUrl = `https://api-pink-venom.vercel.app/api/ytdl?url=${url}`;
-
+        // API request to download song
+        const apiUrl = `https://prabath-ytdl-scrapper.koyeb.app/api/mp3v2?url=${encodeURIComponent(q)}`;
         const response = await fetch(apiUrl);
         const data = await response.json();
 
-        
-        if (!data || data.status !== "success") return reply("Failed to fetch song details. Please try again later.");
+        if (!data.status) return reply("Failed to fetch song details. Please try again.");
 
-        const { title, size, download_url } = data;
+        const { title, dl_link, file_size = "Unknown" } = data;  // Optional file size
 
- 
+        // Song information message
         const songInfo = `
 ┌───────────────────
-├ *🎶 Title:* ${title}
-├ *📏 Size:* ${size}
-├ *🔗 Download URL:* ${download_url}
+├ *✨Title:* ${title}
+├ *📏Size:* ${file_size}
+├ *🔗Download:* ${dl_link}
 └───────────────────
-${config.botname}
+${mg.botname}
         `;
         await conn.sendMessage(from, { text: songInfo }, { quoted: mek });
 
-        
-        await conn.sendMessage(from, { text: '*📤 Uploading your song...*' }, { quoted: mek, edit: key });
+        // Edit to uploading status and send audio
+        await conn.sendMessage(from, { text: '*📤 Uploading your song...*', edit: key });
+        await conn.sendMessage(from, { audio: { url: dl_link }, mimetype: "audio/mpeg" }, { quoted: mek });
 
-        
-        await conn.sendMessage(from, { audio: { url: download_url }, mimetype: "audio/mpeg" }, { quoted: mek });
+        // Send as document with metadata
+        await conn.sendMessage(from, { document: { url: dl_link }, mimetype: "audio/mpeg", fileName: `${title}.mp3`, caption: `${mg.botname}` }, { quoted: mek });
 
-        
-        await conn.sendMessage(from, { document: { url: download_url }, mimetype: "audio/mpeg", fileName: `${title}.mp3` }, { quoted: mek });
-
-        
+        // Final success confirmation
+        await sleep(1000);
         await conn.sendMessage(from, { text: "*✅ Media uploaded successfully ✅*", edit: key });
 
-    } catch (error) {
-        console.error(error);
-        reply(`An error occurred: ${error.message}`);
+    } catch (e) {
+        console.log(e);
+        reply(`An error occurred: ${e.message}`);
     }
 });
-
