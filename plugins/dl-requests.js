@@ -1134,7 +1134,7 @@ if (isGroup) {
 ├ *📍Views:* ${videoData.views}
 ├ *🖇️URL:* ${videoData.url}
 └───────────────────
-${mg.footer}`;
+${mg.botname}`;
 
         
         await conn.sendMessage(from, { image: { url: videoData.thumbnail }, caption: desc }, { quoted: mek });
@@ -1144,7 +1144,7 @@ ${mg.footer}`;
 
         
         await conn.sendMessage(from, { audio: { url: dl_link }, mimetype: "audio/mpeg" }, { quoted: mek });
-        await conn.sendMessage(from, { document: { url: dl_link }, mimetype: "audio/mpeg", fileName: `${title}.mp3`, caption: `${mg.footer}` }, { quoted: mek });
+        await conn.sendMessage(from, { document: { url: dl_link }, mimetype: "audio/mpeg", fileName: `${title}.mp3`, caption: `${mg.botname}` }, { quoted: mek });
 
         
         await sleep(1000);
