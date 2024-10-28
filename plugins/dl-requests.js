@@ -1109,6 +1109,7 @@ if (isGroup) {
             videoUrl = videoData.url;
         }
 
+        const { key } = await conn.sendMessage(from, { text: '*📥 Downloading your song...*' }, { quoted: mek });
         
         const apiUrl = `https://prabath-ytdl-scrapper.koyeb.app/api/mp3v2?url=${encodeURIComponent(videoUrl)}`;
         const response = await fetch(apiUrl);
@@ -1137,9 +1138,6 @@ ${mg.footer}`;
 
         
         await conn.sendMessage(from, { image: { url: videoData.thumbnail }, caption: desc }, { quoted: mek });
-
-        
-        const { key } = await conn.sendMessage(from, { text: '*📥 Downloading your song...*' }, { quoted: mek });
 
         
         await conn.sendMessage(from, { text: "*📤 Uploading your song...*", edit: key });
