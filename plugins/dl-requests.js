@@ -1072,9 +1072,9 @@ cmd({
 
 
 cmd({
-    pattern: "song3",
+    pattern: "song",
     react: "🎶",
-    alias: ["dlsong3", "ytmp3"],
+    alias: ["dlsong", "ytmp3"],
     desc: "Download songs by name or URL with enhanced details",
     category: "download",
     use: '.song3 <YouTube URL> or .song3 <Song Name>',
