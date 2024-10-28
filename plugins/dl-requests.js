@@ -1075,7 +1075,7 @@ cmd({
     pattern: "song3",
     react: "🎶",
     alias: ["dlsong3", "ytmp3"],
-    desc: "Download songs by name or URL using Prabath's mp3v2 API",
+    desc: "Download songs by name or URL with enhanced details",
     category: "download",
     use: '.song3 <YouTube URL> or .song3 <Song Name>',
     filename: __filename
@@ -1083,28 +1083,24 @@ cmd({
 async (conn, mek, m, { from, args, reply }) => {
     try {
         const q = args.join(" ");
-        if (!q) return reply('*Please provide a YouTube URL or song name to search.*');
+        if (!q) return reply("Please provide a YouTube URL or song name.");
 
-        let videoUrl;
-        
-        // Check if the input is a URL
+        let videoData, videoUrl;
+
+        // Check if input is a URL or search query
         if (q.startsWith("https://")) {
             videoUrl = q;
         } else {
-            // Search YouTube for the song name and get the first result
             const yts = require("yt-search");
-            const searchResults = await yts(q);
-            const firstResult = searchResults.all[0];
+            const search = await yts(q);
+            videoData = search.videos[0];
 
-            if (!firstResult) return reply("No results found. Please try a different query.");
+            if (!videoData) return reply("No results found. Please try a different query.");
 
-            videoUrl = firstResult.url; // Get the first result's URL
+            videoUrl = videoData.url;
         }
 
-        // Send initial downloading message
-        const { key } = await conn.sendMessage(from, { text: '*📥 Downloading your song...*' }, { quoted: mek });
-
-        // API request to download song
+        // Fetch song details
         const apiUrl = `https://prabath-ytdl-scrapper.koyeb.app/api/mp3v2?url=${encodeURIComponent(videoUrl)}`;
         const response = await fetch(apiUrl);
         const data = await response.json();
@@ -1112,26 +1108,38 @@ async (conn, mek, m, { from, args, reply }) => {
         if (!data.status) return reply("Failed to fetch song details. Please try again.");
 
         const { title, dl_link, file_size = "Unknown" } = data;
+        if (!videoData) {
+            const yts = require("yt-search");
+            const search = await yts(q);
+            videoData = search.videos[0];
+        }
+        
+        const desc = `
+🎡 *SAVIYA-X-MD-SONG-DOWNLOADER* 🎡
 
-        // Song information message
-        const songInfo = `
 ┌───────────────────
-├ *✨Title:* ${title}
-├ *📏Size:* ${file_size}
-├ *🔗Download:* ${dl_link}
+├ *✨Title:* ${videoData.title}
+├ *⏱️Duration:* ${videoData.timestamp}
+├ *⚖️Uploaded:* ${videoData.ago}
+├ *📍Views:* ${videoData.views}
+├ *🖇️URL:* ${videoData.url}
 └───────────────────
-${mg.botname}
-        `;
-        await conn.sendMessage(from, { text: songInfo }, { quoted: mek });
+${mg.footer}`;
 
-        // Edit to uploading status and send audio
-        await conn.sendMessage(from, { text: '*📤 Uploading your song...*', edit: key });
+        // Send the song info with thumbnail
+        await conn.sendMessage(from, { image: { url: videoData.thumbnail }, caption: desc }, { quoted: mek });
+
+        // Send initial downloading message
+        const { key } = await conn.sendMessage(from, { text: '*📥 Downloading your song...*' }, { quoted: mek });
+
+        // Send "Uploading your song..." message
+        await conn.sendMessage(from, { text: '*📤 Uploading your song...*' }, { quoted: mek });
+
+        // Upload song as audio and document
         await conn.sendMessage(from, { audio: { url: dl_link }, mimetype: "audio/mpeg" }, { quoted: mek });
+        await conn.sendMessage(from, { document: { url: dl_link }, mimetype: "audio/mpeg", fileName: `${title}.mp3`, caption: `${mg.footer}` }, { quoted: mek });
 
-        // Send as document with metadata
-        await conn.sendMessage(from, { document: { url: dl_link }, mimetype: "audio/mpeg", fileName: `${title}.mp3`, caption: `${mg.botname}` }, { quoted: mek });
-
-        // Final success confirmation
+        // Update the upload message to "Media uploaded successfully"
         await sleep(1000);
         await conn.sendMessage(from, { text: "*✅ Media uploaded successfully ✅*", edit: key });
 
@@ -1140,3 +1148,4 @@ ${mg.botname}
         reply(`An error occurred: ${e.message}`);
     }
 });
+
