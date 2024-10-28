@@ -12,9 +12,9 @@ const  bot = config.BOTNUMBER;
 
 
 cmd({
-    pattern: "song",
+    pattern: "song3",
     react: "🎼",
-    alias: ["dlsong"],
+    alias: ["dlsong3"],
     desc: "download songs",
     category: "download",
     use: '.song',
