@@ -953,10 +953,10 @@ if(isGroup){
 
         if (!q) return reply("Please provide a search query.");
 
-        // Send initial searching message
+        
         const { key } = await conn.sendMessage(from, { text: '*🔍 Searching for TikTok videos...*' }, { quoted: mek });
 
-        // Encode the query
+        
         const query = encodeURI(q);
         const apiUrl = `https://prabath-md-api.up.railway.app/api/tiktoksearch?q=${query}&apikey=${apikey}`;
 
@@ -968,7 +968,7 @@ if(isGroup){
         const videoList = data.data;
         if (videoList.length === 0) return reply("No TikTok videos found for your search query.");
 
-        // Prepare TikTok video information messages
+        
         let videoInfo = "*Saviya-Md TikTok Search Results:*\n\n";
         videoList.forEach(video => {
             videoInfo += `*🎵 Title:* ${video.title}\n`;
@@ -979,10 +979,10 @@ if(isGroup){
             videoInfo += `*💬 Comments:* ${video.comment_count}\n\n`;
         });
 
-        // Send video information
+        
         await conn.sendMessage(from, { text: videoInfo }, { quoted: mek });
 
-        // Edit message to "Done"
+        
         await sleep(1000);
         await conn.sendMessage(from, { text: "*✅ Search completed successfully ✅*", edit: key });
 
@@ -1080,14 +1080,23 @@ cmd({
     use: '.song3 <YouTube URL> or .song3 <Song Name>',
     filename: __filename
 },
-async (conn, mek, m, { from, args, reply }) => {
+async (conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, isSaviya, groupAdmins, isBotAdmins, isAdmins, reply, react }) => {
     try {
+
+if (isGroup) {
+            const groupCheck = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${from}`);
+            if (groupCheck && (groupCheck?.error || groupCheck?.data?.type == 'false')) return;
+        } else {
+            const userCheck = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${sender}`);
+            if (userCheck && (userCheck?.error || userCheck?.data?.type == 'false')) return;
+        }
+
         const q = args.join(" ");
         if (!q) return reply("Please provide a YouTube URL or song name.");
 
         let videoData, videoUrl;
 
-        // Check if input is a URL or search query
+        
         if (q.startsWith("https://")) {
             videoUrl = q;
         } else {
@@ -1100,7 +1109,7 @@ async (conn, mek, m, { from, args, reply }) => {
             videoUrl = videoData.url;
         }
 
-        // Fetch song details
+        
         const apiUrl = `https://prabath-ytdl-scrapper.koyeb.app/api/mp3v2?url=${encodeURIComponent(videoUrl)}`;
         const response = await fetch(apiUrl);
         const data = await response.json();
@@ -1126,20 +1135,20 @@ async (conn, mek, m, { from, args, reply }) => {
 └───────────────────
 ${mg.footer}`;
 
-        // Send the song info with thumbnail
+        
         await conn.sendMessage(from, { image: { url: videoData.thumbnail }, caption: desc }, { quoted: mek });
 
-        // Send initial downloading message
+        
         const { key } = await conn.sendMessage(from, { text: '*📥 Downloading your song...*' }, { quoted: mek });
 
-        // Send "Uploading your song..." message
-        await conn.sendMessage(from, { text: '*📤 Uploading your song...*' }, { quoted: mek });
+        
+        await conn.sendMessage(from, { text: "*📤 Uploading your song...*", edit: key });
 
-        // Upload song as audio and document
+        
         await conn.sendMessage(from, { audio: { url: dl_link }, mimetype: "audio/mpeg" }, { quoted: mek });
         await conn.sendMessage(from, { document: { url: dl_link }, mimetype: "audio/mpeg", fileName: `${title}.mp3`, caption: `${mg.footer}` }, { quoted: mek });
 
-        // Update the upload message to "Media uploaded successfully"
+        
         await sleep(1000);
         await conn.sendMessage(from, { text: "*✅ Media uploaded successfully ✅*", edit: key });
 
