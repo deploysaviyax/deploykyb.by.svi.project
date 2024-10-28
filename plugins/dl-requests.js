@@ -1072,127 +1072,41 @@ cmd({
 
 
 cmd({
-    pattern: "video2",
-    react: "🎥",
-    alias: ["dlvideo2"],
-    desc: "Download videos from YouTube",
-    category: "download",
-    use: '.video2 <YouTube URL>',
-    filename: __filename
-}, async (conn, mek, m, { from, q, reply }) => {
-    try {
-        // Check if a URL is provided
-        if (!q) return reply("Please provide a YouTube URL.");
-
-        // Send initial downloading message
-        const { key } = await conn.sendMessage(from, { text: '*📥 Fetching video details...*' }, { quoted: mek });
-
-        // Encode the URL
-        const url = encodeURIComponent(q);
-        const apiUrl = `https://prabath-ytdl-scrapper.koyeb.app/api/yt5s?url=${url}`;
-
-        // Fetch the video details from the API
-        const response = await fetch(apiUrl);
-        const data = await response.json();
-
-        // Check for successful response
-        if (!data.status) {
-            return reply("Failed to fetch video details. Please check the URL and try again.");
-        }
-
-        const { title, links } = data;
-
-        // Prepare video quality options
-        let videoOptions = "Available Qualities:\n";
-        if (links.mp4) {
-            links.mp4.forEach(video => {
-                videoOptions += `- ${video.quality} (Size: ${video.size})\n`;
-            });
-        }
-
-        // Send video information
-        const videoInfo = `
-┌───────────────────
-├ *🎥 Title:* ${title}
-├ *💬 Select Quality:* 
-${videoOptions}
-└───────────────────
-Please reply with the desired quality (e.g., 720p).
-${mg.botname}
-        `;
-        await conn.sendMessage(from, { text: videoInfo }, { quoted: mek });
-
-        // Wait for user response for quality selection
-        const filter = m => m.from === from && m.body.match(/(1080p|720p|360p|240p|144p)/);
-
-        // Create a listener for the next message from the user
-        const messageListener = async (msg) => {
-            if (filter(msg)) {
-                const selectedQuality = msg.body.trim();
-                const selectedVideo = links.mp4.find(video => video.quality === selectedQuality);
-
-                if (!selectedVideo) {
-                    return reply("Invalid quality selected. Please try again.");
-                }
-
-                // Edit message to indicate uploading
-                await conn.sendMessage(from, { text: '*📤 Uploading your video...*', edit: key });
-
-                // Send video
-                await conn.sendMessage(from, { video: { url: `https://prabath-ytdl-scrapper.koyeb.app/api/yt5s?url=${url}&quality=${selectedQuality}` }, mimetype: "video/mp4" }, { quoted: mek });
-
-                // Confirm completion
-                await conn.sendMessage(from, { text: "*✅ Video uploaded successfully ✅*", edit: key });
-
-                // Remove listener after processing
-                conn.removeMessageListener(messageListener);
-            }
-        };
-
-        // Add the message listener to capture user response
-        conn.on("message", messageListener);
-
-        // Set a timeout to remove the listener if no response is received
-        setTimeout(() => {
-            conn.removeMessageListener(messageListener);
-            reply("No quality selected within the time limit. Please try again.");
-        }, 60000); // 60 seconds timeout
-
-    } catch (e) {
-        console.error(e); // Use console.error for errors
-        reply(`An error occurred: ${e.message}`);
-    }
-});
-
-
-
-cmd({
     pattern: "song3",
     react: "🎶",
-    alias: ["dlsong3"],
+    alias: ["dlsong3","ytmp3"],
     desc: "Download songs using Prabath's mp3v2 API",
     category: "download",
     use: '.song3 <YouTube URL>',
     filename: __filename
 },
-async (conn, mek, m, { from, args, reply }) => {
+async (conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, isSaviya, groupAdmins, isBotAdmins, isAdmins, reply, react }) => {
     try {
+
+ if (isGroup) {
+            const groupCheck = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${from}`);
+            if (groupCheck && (groupCheck?.error || groupCheck?.data?.type == 'false')) return;
+        } else {
+            const userCheck = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${sender}`);
+            if (userCheck && (userCheck?.error || userCheck?.data?.type == 'false')) return;
+        }
+
         const q = args[0];
         if (!q) return reply("Please provide a YouTube URL.");
 
-        // Send initial downloading message
+        
         const { key } = await conn.sendMessage(from, { text: '*📥 Downloading your song...*' }, { quoted: mek });
 
-        // API request to download song
+        
         const apiUrl = `https://prabath-ytdl-scrapper.koyeb.app/api/mp3v2?url=${encodeURIComponent(q)}`;
         const response = await fetch(apiUrl);
         const data = await response.json();
 
         if (!data.status) return reply("Failed to fetch song details. Please try again.");
 
-        const { title, dl_link, file_size = "Unknown" } = data;  // Optional file size
+        const { title, dl_link, file_size = "Unknown" } = data;  
 
-        // Song information message
+        
         const songInfo = `
 ┌───────────────────
 ├ *✨Title:* ${title}
@@ -1203,14 +1117,14 @@ ${mg.botname}
         `;
         await conn.sendMessage(from, { text: songInfo }, { quoted: mek });
 
-        // Edit to uploading status and send audio
+        
         await conn.sendMessage(from, { text: '*📤 Uploading your song...*', edit: key });
         await conn.sendMessage(from, { audio: { url: dl_link }, mimetype: "audio/mpeg" }, { quoted: mek });
 
-        // Send as document with metadata
+       
         await conn.sendMessage(from, { document: { url: dl_link }, mimetype: "audio/mpeg", fileName: `${title}.mp3`, caption: `${mg.botname}` }, { quoted: mek });
 
-        // Final success confirmation
+        
         await sleep(1000);
         await conn.sendMessage(from, { text: "*✅ Media uploaded successfully ✅*", edit: key });
 
