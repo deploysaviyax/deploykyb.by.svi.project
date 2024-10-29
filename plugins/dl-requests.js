@@ -1228,7 +1228,7 @@ if (isGroup) {
 ${mg.botname}`;
 
         
-        await conn.sendMessage(from, { image: { url: image || "default_thumbnail.jpg" }, caption: videoInfo }, { quoted: mek });
+        await conn.sendMessage(from, { image: { url: image }, caption: videoInfo }, { quoted: mek });
 
         
         await conn.sendMessage(from, { text: "*📤 Uploading your video...*", edit: key });
