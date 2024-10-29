@@ -1192,7 +1192,7 @@ if (isGroup) {
         if (query.startsWith("https://")) {
             videoUrl = query;
         } else {
-            const searchApiUrl = `https://dark-yasiya-api-new.vercel.app/search/yt?text=${encodeURIComponent(query)}`;
+            const searchApiUrl = `https://dark-yasiya-api-new.vercel.app/search/yt?q=${encodeURIComponent(query)}`;
             const searchResponse = await fetch(searchApiUrl);
             const searchResult = await searchResponse.json();
 
