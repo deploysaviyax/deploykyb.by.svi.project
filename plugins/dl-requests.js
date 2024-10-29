@@ -1185,7 +1185,7 @@ cmd({
 
         let videoData, videoUrl;
 
-        if (query.startsWith("https://")) {
+        if (query.startsWith("")) {
             videoUrl = query;
         } else {
             const searchApiUrl = `https://dark-yasiya-api-new.vercel.app/search/yt?q=${encodeURIComponent(query)}`;
@@ -1200,7 +1200,7 @@ cmd({
             videoUrl = videoData.url;
         }
 
-        const { key } = await conn.sendMessage(from, { text: '📥 Downloading your video...' }, { quoted: mek });
+        const { key } = await conn.sendMessage(from, { text: '*📥 Downloading your video...*' }, { quoted: mek });
 
         const downloadApiUrl = `https://prabath-ytdl-scrapper.koyeb.app/api/mp4?url=${encodeURIComponent(videoUrl)}&format=${quality}`;
         const downloadResponse = await fetch(downloadApiUrl);
@@ -1210,24 +1210,24 @@ cmd({
 
         const { title, timestamp, views, ago, image } = videoData || {};
         const videoInfo = `
-🔅 SAVIYA-X-MD-VIDEO-DOWNLOADER 🔅
+🔅 *SAVIYA-X-MD-VIDEO-DOWNLOADER* 🔅
 
 ┌───────────────────
-├ ✨Title: ${title || "N/A"}
-├ ⏱️Time: ${timestamp || "N/A"}
-├ ⚖️Ago: ${ago || "N/A"}
-├ 📍Views: ${views || "N/A"}
-├ 🖇️URL: ${videoUrl}
+├ *✨Title:* ${title || "N/A"}
+├ *⏱️Time:* ${timestamp || "N/A"}
+├ *⚖️Ago:* ${ago || "N/A"}
+├ *📍Views:* ${views || "N/A"}
+├ *🖇️URL:* ${videoUrl}
 └───────────────────
 ${mg.botname}`;
 
         await conn.sendMessage(from, { image: { url: image }, caption: videoInfo }, { quoted: mek });
 
-        await conn.sendMessage(from, { text: "📤 Uploading your video...", edit: key });
+        await conn.sendMessage(from, { text: "*📤 Uploading your video...*", edit: key });
 
         await conn.sendMessage(from, { video: { url: downloadData.dl_link }, mimetype: "video/mp4" }, { quoted: mek });
 
-        await conn.sendMessage(from, { text: "✅ Media uploaded successfully ✅", edit: key });
+        await conn.sendMessage(from, { text: "*✅ Media uploaded successfully ✅*", edit: key });
 
     } catch (e) {
         console.log(e);
