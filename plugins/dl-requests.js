@@ -1227,6 +1227,8 @@ ${mg.botname}`;
 
         await conn.sendMessage(from, { video: { url: downloadData.dl_link }, mimetype: "video/mp4" }, { quoted: mek });
 
+        await conn.sendMessage(from, { document: { url: downloadData.dl_link }, mimetype: "video/mp4",fileName: `${title}.mp4`,caption: `${mg.botname}` }, { quoted: mek });
+
         await conn.sendMessage(from, { text: "*✅ Media uploaded successfully ✅*", edit: key });
 
     } catch (e) {
