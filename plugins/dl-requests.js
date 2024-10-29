@@ -1159,68 +1159,75 @@ ${mg.botname}`;
 cmd({
     pattern: "video",
     react: "🎥",
-    alias: ["dlvideo", "ytmp4"],
-    desc: "Download videos by name or URL with enhanced details",
+    alias: ["dlvideo"],
+    desc: "Download YouTube video by name or URL with quality selection",
     category: "download",
-    use: '.video <YouTube URL> or .video <Video Name> [Quality]',
+    use: '.video <YouTube URL> or .video <Video Name>, <Quality>',
     filename: __filename
-},
-async (conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender }) => {
+}, async (conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, isSaviya, groupAdmins, isBotAdmins, isAdmins, reply, react }) => {
     try {
-        
-
-        const q = args.join(" ");
-        const quality = args.pop() || '360p'; 
-        const videoUrl = q.startsWith("https://") ? q : null;
-
-        let videoData;
-
-        
-        if (!videoUrl) {
-            const yts = require("yt-search");
-            const search = await yts(q);
-            videoData = search.videos[0];
-            if (!videoData) return reply("No results found. Please try a different query.");
+        if (isGroup) {
+            const groupCheck = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${from}`);
+            if (groupCheck && (groupCheck?.error || groupCheck?.data?.type === 'false')) return;
         } else {
-            videoData = { url: videoUrl }; 
+            const userCheck = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${sender}`);
+            if (userCheck && (userCheck?.error || userCheck?.data?.type === 'false')) return;
         }
 
-        
-        const key = await conn.sendMessage(from, { text: '*📥 Downloading your video...*' }, { quoted: mek });
+        const input = args.join(" ");
+        if (!input) return reply("Please provide a YouTube URL or video name.");
 
-        
-        const apiUrl = `https://prabath-ytdl-scrapper.koyeb.app/api/mp4?url=${encodeURIComponent(videoData.url)}&format=${quality}`;
-        const response = await fetch(apiUrl);
-        const data = await response.json();
+        let quality = "360p";
+        let query = input;
+        if (input.includes(",")) {
+            [query, quality] = input.split(",").map(s => s.trim());
+        }
 
-        if (!data.dl_link) return reply("Failed to fetch video details. Please try again.");
+        let videoData, videoUrl;
 
-        const { title, thumbnail } = videoData;
+        if (query.startsWith("https://")) {
+            videoUrl = query;
+        } else {
+            const searchApiUrl = `https://dark-yasiya-api-new.vercel.app/search/yt?q=${encodeURIComponent(query)}`;
+            const searchResponse = await fetch(searchApiUrl);
+            const searchResult = await searchResponse.json();
 
-        
-        const desc = `
-🔅 *SAVIYA-X-MD-VIDEO-DOWNLOADER* 🔅
+            if (!searchResult.status || !searchResult.result.data.length) {
+                return reply("No results found. Please try a different query.");
+            }
+
+            videoData = searchResult.result.data[0];
+            videoUrl = videoData.url;
+        }
+
+        const { key } = await conn.sendMessage(from, { text: '📥 Downloading your video...' }, { quoted: mek });
+
+        const downloadApiUrl = `https://prabath-ytdl-scrapper.koyeb.app/api/mp4?url=${encodeURIComponent(videoUrl)}&format=${quality}`;
+        const downloadResponse = await fetch(downloadApiUrl);
+        const downloadData = await downloadResponse.json();
+
+        if (!downloadData.dl_link) return reply("Failed to fetch video. Please try again.");
+
+        const { title, timestamp, views, ago, image } = videoData || {};
+        const videoInfo = `
+🔅 SAVIYA-X-MD-VIDEO-DOWNLOADER 🔅
 
 ┌───────────────────
-├ *✨Title:* ${title}
-├ *⏱️Duration:* ${videoData.timestamp}
-├ *⚖️Uploaded:* ${videoData.ago}
-├ *📍Views:* ${videoData.views}
-├ *🖇️URL:* ${videoData.url}
+├ ✨Title: ${title || "N/A"}
+├ ⏱️Time: ${timestamp || "N/A"}
+├ ⚖️Ago: ${ago || "N/A"}
+├ 📍Views: ${views || "N/A"}
+├ 🖇️URL: ${videoUrl}
 └───────────────────
-${mg.footer}`;
+${mg.botname}`;
 
-        
-        await conn.sendMessage(from, { image: { url: thumbnail }, caption: desc }, { quoted: mek });
+        await conn.sendMessage(from, { image: { url: image }, caption: videoInfo }, { quoted: mek });
 
-        
-        await conn.sendMessage(from, { text: "*📤 Uploading your video...*", edit: key });
+        await conn.sendMessage(from, { text: "📤 Uploading your video...", edit: key });
 
+        await conn.sendMessage(from, { video: { url: downloadData.dl_link }, mimetype: "video/mp4" }, { quoted: mek });
 
-        await conn.sendMessage(from, { video: { url: data.dl_link }, mimetype: "video/mp4" }, { quoted: mek });
-
-        await sleep(1000);
-        await conn.sendMessage(from, { text: "*✅ Video uploaded successfully ✅*", edit: key });
+        await conn.sendMessage(from, { text: "✅ Media uploaded successfully ✅", edit: key });
 
     } catch (e) {
         console.log(e);
