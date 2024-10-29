@@ -396,3 +396,53 @@ if (isGroup) {
         await reply(`An error occurred: ${e.message}`);
     }
 });
+
+
+cmd({
+    pattern: "ada",
+    alias: ["adanews"],
+    desc: "Get the latest Ada news.",
+    category: "News",
+    react: "📰",
+    use: '.ada',
+    filename: __filename
+}, async (conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, isSaviya, groupAdmins, isBotAdmins, isAdmins, reply, react }) => {
+     try {
+
+if (isGroup) {
+            const groupCheck = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${from}`);
+            if (groupCheck && (groupCheck?.error || groupCheck?.data?.type == 'false')) return;
+        } else {
+            const userCheck = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${sender}`);
+            if (userCheck && (userCheck?.error || userCheck?.data?.type == 'false')) return;
+}
+         
+        await conn.sendPresenceUpdate('composing', from);
+        await new Promise(resolve => setTimeout(resolve, Math.floor(Math.random() * 1000) + 1000));
+
+        
+        const apiUrl = "https://dark-yasiya-api-new.vercel.app/news/ada";
+        const response = await axios.get(apiUrl);
+
+        
+        if (!response.data.status) {
+            return reply("Failed to fetch the latest Ada news. Please try again later.");
+        }
+
+        
+        const { title, image, date, time, url, desc } = response.data.result;
+
+        
+        const newsMessage = `📰 *${title}*\n\n${desc}\n\n*📅 Date:* ${date}\n*🕒 Time:* ${time}\n\n🔗 [Read More](${url})`;
+
+        
+        await conn.sendMessage(from, { image: { url: image }, caption: newsMessage });
+        
+    } catch (e) {
+        console.log(e);
+        reply(`An error occurred: ${e.message}`);
+    } finally {
+        
+        await conn.sendPresenceUpdate('paused', from);
+    }
+});
