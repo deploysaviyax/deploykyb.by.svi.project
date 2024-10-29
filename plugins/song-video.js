@@ -67,9 +67,9 @@ ${mg.footer}`;
 
 
 cmd({
-    pattern: "video",
+    pattern: "video2",
     react: "🎼",
-    alias: ["dlvideo"],
+    alias: ["dlvideo2"],
     desc: "download videos",
     category: "download",
     use: '.video',
