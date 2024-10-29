@@ -1165,82 +1165,56 @@ cmd({
     use: '.video <YouTube URL> or .video <Video Name>, <Quality>',
     filename: __filename
 },
-async (conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, isSaviya, groupAdmins, isBotAdmins, isAdmins, reply, react }) => {
+async (conn, mek, m, { from, quoted, args, reply }) => {
     try {
-
-if (isGroup) {
-            const groupCheck = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${from}`);
-            if (groupCheck && (groupCheck?.error || groupCheck?.data?.type == 'false')) return;
-        } else {
-            const userCheck = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${sender}`);
-            if (userCheck && (userCheck?.error || userCheck?.data?.type == 'false')) return;
-        }
-
-        const input = args.join(" ");
-        if (!input) return reply("Please provide a YouTube URL or video name.");
-
-       
-        let quality = "360p";
-        let query = input;
-        if (input.includes(",")) {
-            [query, quality] = input.split(",").map(s => s.trim());
-        }
+        const q = args.join(" ");
+        if (!q) return reply("Please provide a YouTube URL or song name.");
 
         let videoData, videoUrl;
 
         
-        if (query.startsWith("https://")) {
-            videoUrl = query;
+        if (q.startsWith("https://")) {
+            videoUrl = q;
         } else {
-            const searchApiUrl = `https://dark-yasiya-api-new.vercel.app/search/yt?q=${encodeURIComponent(query)}`;
-            const searchResponse = await fetch(searchApiUrl);
-            const searchResult = await searchResponse.json();
+            const yts = require("yt-search");
+            const search = await yts(q);
+            videoData = search.videos[0];
 
-            if (!searchResult.status || !searchResult.result.data.length) {
-                return reply("No results found. Please try a different query.");
-            }
+            if (!videoData) return reply("No results found. Please try a different query.");
 
-            
-            videoData = searchResult.result.data[0];
             videoUrl = videoData.url;
         }
 
         const { key } = await conn.sendMessage(from, { text: '*📥 Downloading your video...*' }, { quoted: mek });
-   
-        const downloadApiUrl = `https://prabath-ytdl-scrapper.koyeb.app/api/mp4?url=${encodeURIComponent(videoUrl)}&format=${quality}`;
-        const downloadResponse = await fetch(downloadApiUrl);
-        const downloadData = await downloadResponse.json();
-
-        if (!downloadData.dl_link) return reply("Failed to fetch video. Please try again.");
 
         
-        const { title, timestamp, views, ago, image } = videoData || {};
+        const apiUrl = `https://prabath-ytdl-scrapper.koyeb.app/api/mp4?url=${encodeURIComponent(videoUrl)}`;
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+
+        if (!data.status) return reply("Failed to fetch video details. Please try again.");
+
+        const { title = "N/A", timestamp = "N/A", views = "N/A", ago = "N/A", dl_link } = data;
         const videoInfo = `
 🔅 *SAVIYA-X-MD-VIDEO-DOWNLOADER* 🔅
 
 ┌───────────────────
-├ *✨Title:* ${title || "N/A"}
-├ *⏱️Time:* ${timestamp || "N/A"}
-├ *⚖️Ago:* ${ago || "N/A"}
-├ *📍Views:* ${views || "N/A"}
+├ *✨Title:* ${title}
+├ *⏱️Time:* ${timestamp}
+├ *⚖️Ago:* ${ago}
+├ *📍Views:* ${views}
 ├ *🖇️URL:* ${videoUrl}
 └───────────────────
 ${mg.botname}`;
 
-        
         await conn.sendMessage(from, { image: { url: videoData.image }, caption: videoInfo }, { quoted: mek });
-
         
         await conn.sendMessage(from, { text: "*📤 Uploading your video...*", edit: key });
-
-        
-        await conn.sendMessage(from, { video: { url: downloadData.dl_link }, mimetype: "video/mp4" }, { quoted: mek });
-
-        
+        await conn.sendMessage(from, { video: { url: dl_link }, mimetype: "video/mp4" }, { quoted: mek });
         await conn.sendMessage(from, { text: "*✅ Media uploaded successfully ✅*", edit: key });
 
     } catch (e) {
-        console.log(e);
+        console.error(e);
         reply(`An error occurred: ${e.message}`);
     }
 });
