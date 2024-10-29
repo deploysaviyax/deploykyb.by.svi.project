@@ -1185,7 +1185,7 @@ cmd({
 
         let videoData, videoUrl;
 
-        if (query.startsWith("")) {
+        if (query.startsWith("www")) {
             videoUrl = query;
         } else {
             const searchApiUrl = `https://dark-yasiya-api-new.vercel.app/search/yt?q=${encodeURIComponent(query)}`;
