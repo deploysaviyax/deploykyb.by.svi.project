@@ -1156,3 +1156,82 @@ ${mg.botname}`;
     }
 });
 
+cmd({
+    pattern: "video",
+    react: "🎥",
+    alias: ["dlvideo"],
+    desc: "Download YouTube video by name or URL with quality selection",
+    category: "download",
+    use: '.video <YouTube URL> or .video <Video Name>, <Quality>',
+    filename: __filename
+},
+async (conn, mek, m, { from, args, reply }) => {
+    try {
+        const input = args.join(" ");
+        if (!input) return reply("Please provide a YouTube URL or video name.");
+
+       
+        let quality = "360p";
+        let query = input;
+        if (input.includes(",")) {
+            [query, quality] = input.split(",").map(s => s.trim());
+        }
+
+        let videoData, videoUrl;
+
+        
+        if (query.startsWith("http")) {
+            videoUrl = query;
+        } else {
+            const searchApiUrl = `https://dark-yasiya-api-new.vercel.app/search/yt?text=${encodeURIComponent(query)}`;
+            const searchResponse = await fetch(searchApiUrl);
+            const searchResult = await searchResponse.json();
+
+            if (!searchResult.status || !searchResult.result.data.length) {
+                return reply("No results found. Please try a different query.");
+            }
+
+            
+            videoData = searchResult.result.data[0];
+            videoUrl = videoData.url;
+        }
+
+        const { key } = await conn.sendMessage(from, { text: '*📥 Downloading your video...*' }, { quoted: mek });
+   
+        const downloadApiUrl = `https://prabath-ytdl-scrapper.koyeb.app/api/mp4?url=${encodeURIComponent(videoUrl)}&format=${quality}`;
+        const downloadResponse = await fetch(downloadApiUrl);
+        const downloadData = await downloadResponse.json();
+
+        if (!downloadData.dl_link) return reply("Failed to fetch video. Please try again.");
+
+        
+        const { title, timestamp, views, ago, image } = videoData || {};
+        const videoInfo = `
+🔅 *SAVIYA-X-MD-VIDEO-DOWNLOADER* 🔅
+
+┌───────────────────
+├ *✨Title:* ${title || "N/A"}
+├ *⏱️Time:* ${timestamp || "N/A"}
+├ *⚖️Ago:* ${ago || "N/A"}
+├ *📍Views:* ${views || "N/A"}
+├ *🖇️URL:* ${videoUrl}
+└───────────────────
+${mg.footer}`;
+
+        
+        await conn.sendMessage(from, { image: { url: image || "default_thumbnail.jpg" }, caption: videoInfo }, { quoted: mek });
+
+        
+        await conn.sendMessage(from, { text: "*📤 Uploading your video...*", edit: key });
+
+        
+        await conn.sendMessage(from, { video: { url: downloadData.dl_link }, mimetype: "video/mp4" }, { quoted: mek });
+
+        
+        await conn.sendMessage(from, { text: "*✅ Media uploaded successfully ✅*", edit: key });
+
+    } catch (e) {
+        console.log(e);
+        reply(`An error occurred: ${e.message}`);
+    }
+});
