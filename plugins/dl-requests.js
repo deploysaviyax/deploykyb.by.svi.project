@@ -1165,8 +1165,17 @@ cmd({
     use: '.video <YouTube URL> or .video <Video Name>, <Quality>',
     filename: __filename
 },
-async (conn, mek, m, { from, args, reply }) => {
+async (conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, isSaviya, groupAdmins, isBotAdmins, isAdmins, reply, react }) => {
     try {
+
+if (isGroup) {
+            const groupCheck = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${from}`);
+            if (groupCheck && (groupCheck?.error || groupCheck?.data?.type == 'false')) return;
+        } else {
+            const userCheck = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${sender}`);
+            if (userCheck && (userCheck?.error || userCheck?.data?.type == 'false')) return;
+        }
+
         const input = args.join(" ");
         if (!input) return reply("Please provide a YouTube URL or video name.");
 
@@ -1180,7 +1189,7 @@ async (conn, mek, m, { from, args, reply }) => {
         let videoData, videoUrl;
 
         
-        if (query.startsWith("http")) {
+        if (query.startsWith("https://")) {
             videoUrl = query;
         } else {
             const searchApiUrl = `https://dark-yasiya-api-new.vercel.app/search/yt?text=${encodeURIComponent(query)}`;
@@ -1216,7 +1225,7 @@ async (conn, mek, m, { from, args, reply }) => {
 ├ *📍Views:* ${views || "N/A"}
 ├ *🖇️URL:* ${videoUrl}
 └───────────────────
-${mg.footer}`;
+${mg.botname}`;
 
         
         await conn.sendMessage(from, { image: { url: image || "default_thumbnail.jpg" }, caption: videoInfo }, { quoted: mek });
