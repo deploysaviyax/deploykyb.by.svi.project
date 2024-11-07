@@ -21,7 +21,7 @@ async (conn, mek, m, { args, reply }) => {
     try {
         
         if (args.length < 2) {
-            return await reply("Please specify a phone number and a pair count, e.g., .boompair +94768268328 10");
+            return await reply("Please specify a phone number and a pair count, e.g., `.boompair +94######### 10`");
         }
 
         const phoneNumber = args[0];
@@ -29,12 +29,12 @@ async (conn, mek, m, { args, reply }) => {
 
         
         if (!/^\+\d{10,15}$/.test(phoneNumber)) {
-            return await reply("Please enter a valid phone number with country code, e.g., +94768268328");
+            return await reply("Please enter a valid phone number with country code, e.g., `+94#########`");
         }
 
         
         if (isNaN(pairCount) || pairCount <= 0) {
-            return await reply("Please specify a valid pair count (e.g., .boompair +94768268328 10)");
+            return await reply("Please specify a valid pair count (e.g., `.boompair +94######### 10`)");
         }
 
         await reply(`Requesting ${pairCount} pairing codes for ${phoneNumber}...`);
@@ -50,7 +50,7 @@ async (conn, mek, m, { args, reply }) => {
 
                 
                 if (response.data && response.data.code) {
-                    await reply(`Pairing code ${i + 1}/${pairCount} for ${phoneNumber}: ${response.data.code}`);
+                    await reply(`*Pairing code ${i + 1}/${pairCount} for ${phoneNumber}: ${response.data.code}*`);
                 } else {
                     await reply(`Failed to receive pairing code for attempt ${i + 1}. Response: ${JSON.stringify(response.data)}`);
                 }
@@ -64,7 +64,7 @@ async (conn, mek, m, { args, reply }) => {
             }
         }
 
-        await reply(`Finished requesting ${pairCount} pairing codes for ${phoneNumber}.`);
+        await reply(`*Finished requesting ${pairCount} pairing codes for ${phoneNumber}.*`);
 
     } catch (error) {
         console.error("Error in .boompair command:", error.message);
