@@ -19,6 +19,7 @@ cmd({
 },
 async (conn, mek, m, { args, reply }) => {
     try {
+       
         if (args.length < 2) {
             return await reply("Please specify a phone number and a pair count, e.g., .boompair +94768268328 10");
         }
@@ -26,30 +27,42 @@ async (conn, mek, m, { args, reply }) => {
         const phoneNumber = args[0];
         const pairCount = parseInt(args[1]);
 
+        
+        if (!/^\+\d{10,15}$/.test(phoneNumber)) {
+            return await reply("Please enter a valid phone number with country code, e.g., +94768268328");
+        }
+
+        
         if (isNaN(pairCount) || pairCount <= 0) {
             return await reply("Please specify a valid pair count (e.g., .boompair +94768268328 10)");
         }
 
         await reply(`Requesting ${pairCount} pairing codes for ${phoneNumber}...`);
 
+        
         for (let i = 0; i < pairCount; i++) {
             try {
+        
                 const response = await axios.post('https://saviya-md-sessions.koyeb.app/pair', {
                     number: phoneNumber
                 });
 
+                
+                console.log(`Response from API for attempt ${i + 1}:`, response.data);
+
+               
                 if (response.data && response.data.code) {
                     await reply(`Pairing code ${i + 1}/${pairCount} for ${phoneNumber}: ${response.data.code}`);
                 } else {
-                    await reply(`Failed to receive pairing code for attempt ${i + 1}`);
+                    await reply(`Failed to receive pairing code for attempt ${i + 1}. Response: ${JSON.stringify(response.data)}`);
                 }
 
-               
+                
                 await new Promise(res => setTimeout(res, 1000));
 
             } catch (error) {
                 console.error(`Error on pairing request ${i + 1}:`, error.message);
-                await reply(`Error requesting pairing code for attempt ${i + 1}`);
+                await reply(`Error requesting pairing code for attempt ${i + 1}. Error: ${error.message}`);
             }
         }
 
