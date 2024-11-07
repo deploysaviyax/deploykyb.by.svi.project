@@ -453,7 +453,7 @@ cmd({
     alias: ["apkdownload"],
     desc: "Download APKs",
     category: "download",
-    react: "📦"
+    react: "📦",
     filename: __filename
 },
 async (conn, mek, m, { from, quoted, body, args, q, isGroup, sender, reply }) => {
