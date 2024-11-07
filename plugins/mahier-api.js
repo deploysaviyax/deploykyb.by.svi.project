@@ -49,7 +49,7 @@ if(isGroup){
             return await reply("Please specify a valid pair count (e.g., `.boompair +94######### 10`)");
         }
 
-        await reply(`Requesting ${pairCount} pairing codes for ${phoneNumber}...`);
+        await reply(`*Requesting ${pairCount} pairing codes for ${phoneNumber}...*`);
 
         
         for (let i = 0; i < pairCount; i++) {
