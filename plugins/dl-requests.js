@@ -279,8 +279,8 @@ async (conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, 
 
 
 cmd({
-    pattern: "apk",
-    alias: ["apkdownload"],
+    pattern: "apk2",
+    alias: ["apkdownload2"],
     desc: "Download APKs",
     category: "download",
     filename: __filename
