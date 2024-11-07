@@ -446,3 +446,61 @@ if (isGroup) {
         await conn.sendPresenceUpdate('paused', from);
     }
 });
+
+
+cmd({
+    pattern: "apk",
+    alias: ["apkdownload"],
+    desc: "Download APKs",
+    category: "download",
+    react: "📦"
+    filename: __filename
+},
+async (conn, mek, m, { from, quoted, body, args, q, isGroup, sender, reply }) => {
+    try {
+        if (!q) return reply("Please provide the name of the APK to download.");
+
+      
+        const { key } = await conn.sendMessage(from, { text: '🔍 Searching for the APK...' });
+
+        
+        const response = await fetchJson(`https://www.dark-yasiya-api.site/download/apk?id=${encodeURIComponent(q)}`);
+        if (!response || !response.status || !response.result) {
+            return reply("Failed to fetch APK data. Please check the name or try again later.");
+        }
+
+        
+        const { name, package: app_id, lastUpdate, size, image, dl_link } = response.result;
+
+        
+        const apkInfo = `
+┌────────────────────────────
+├ 📚 *Name* : ${name}
+├ 📦 *Package ID* : ${app_id}
+├ ⬆️ *Last update* : ${lastUpdate}
+├ 📥 *Size* : ${size} 
+└────────────────────────────`;
+
+        
+        await conn.sendMessage(from, {
+            image: { url: image },
+            caption: apkInfo
+        }, { quoted: mek });
+
+       
+        await conn.sendMessage(from, {
+            document: { url: dl_link },
+            mimetype: 'application/vnd.android.package-archive',
+            fileName: `${name}.apk`,
+            caption: `${mg.botname}`
+        }, { quoted: mek });
+
+        
+        await conn.sendMessage(from, { text: "*✅ Apk uploaded successfully ✅*", edit: key });
+
+    } catch (e) {
+        console.log(e);
+        reply(`An error occurred: ${e.message}`);
+    }
+});
+
