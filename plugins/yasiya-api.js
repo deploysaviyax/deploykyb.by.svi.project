@@ -519,48 +519,54 @@ cmd({
     alias: ["facebook"],
     desc: "Download FB videos",
     category: "download",
-    react: "🔖",
     filename: __filename
 },
-async (conn, mek, m, { from, quoted, q, isGroup, sender, reply }) => {
+async (conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, isSaviya, groupAdmins, isBotAdmins, isAdmins, reply, react }) => {
     try {
-        
+      
+if (isGroup) {
+            const groupCheck = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${from}`);
+            if (groupCheck && (groupCheck?.error || groupCheck?.data?.type == 'false')) return;
+        } else {
+            const userCheck = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${sender}`);
+            if (userCheck && (userCheck?.error || userCheck?.data?.type == 'false')) return;
+        }
+
         if (!q || !q.startsWith("https://")) {
             return reply("Please provide a valid Facebook video URL.");
         }
 
-        
+       
+        const initialTime = new Date().getTime();
         const { key } = await conn.sendMessage(from, { text: '*📥 Downloading your video...*' });
 
-        
+       
         const response = await fetchJson(`https://www.dark-yasiya-api.site/download/fbdl1?url=${encodeURIComponent(q)}`);
-        
-        
-        if (!response?.result) {
+
+        if (!response.data) {
             return reply("Failed to fetch video data. Please check the URL or try again later.");
         }
 
-       
-        await conn.sendMessage(from, { text: '*📤 Uploading your video...*', edit: key });
+        
+        const uploadMsg = await conn.sendMessage(from, { text: `*📤 Uploading your video...*`, edit: key });
 
        
-        if (response.result.hd) {
-            await conn.sendMessage(from, {
-                video: { url: response.result.hd },
-                mimetype: "video/mp4",
-                caption: `* HD QUALITY VIDEO\n\n${mg.botname}`
-            }, { quoted: mek });
-        } else if (response.result.sd) {
-            await conn.sendMessage(from, {
-                video: { url: response.result.sd },
-                mimetype: "video/mp4",
-                caption: `* SD QUALITY VIDEO\n\n${mg.botname}`
-            }, { quoted: mek });
+        if (response.data.hd) {
+            await conn.sendMessage(from, { video: { url: response.data.hd }, mimetype: "video/mp4", caption: `* HD QUALITY VIDEO\n\n ${mg.botname}` }, { quoted: mek });
         } else {
-            return reply("Both HD and SD videos are unavailable.");
+            reply("HD video is not available.");
         }
 
         
+        if (response.data.sd) {
+            await conn.sendMessage(from, { video: { url: response.data.sd }, mimetype: "video/mp4", caption: `* SD QUALITY VIDEO\n\n ${mg.botname}` }, { quoted: mek });
+        } else {
+            reply("SD video is not available.");
+        }
+
+     
+        const finalTime = new Date().getTime();
+        await sleep(1000);
         await conn.sendMessage(from, { text: "*✅ Media uploaded successfully ✅*", edit: key });
 
     } catch (e) {
@@ -568,5 +574,3 @@ async (conn, mek, m, { from, quoted, q, isGroup, sender, reply }) => {
         reply(`An error occurred: ${e.message}`);
     }
 });
-
-
