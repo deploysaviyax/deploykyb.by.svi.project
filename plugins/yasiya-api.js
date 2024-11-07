@@ -662,3 +662,69 @@ ${mg.botname}
         reply("An error occurred while processing your request. Please try again later.");
     }
 });
+
+
+cmd({
+    pattern: "xnxxs",
+    react: "🔍",
+    alias: ["xnxxsearch"],
+    desc: "Search for XNXX videos by query",
+    category: "search",
+    use: '.xnxxs <search query>',
+    filename: __filename
+}, async (conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, isSaviya, groupAdmins, isBotAdmins, isAdmins, reply, react }) => {
+    try {
+        
+if (isGroup) {
+            const groupCheck = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${from}`);
+            if (groupCheck && (groupCheck?.error || groupCheck?.data?.type == 'false')) return;
+        } else {
+            const userCheck = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${sender}`);
+            if (userCheck && (userCheck?.error || userCheck?.data?.type == 'false')) return;
+        }
+
+        if (!q) return reply("Please provide a search query.");
+
+        
+        const { key } = await conn.sendMessage(from, { text: '*🔍 Searching for XNXX videos...*' }, { quoted: mek });
+
+        
+        const query = encodeURIComponent(q);
+        const apiUrl = `https://nsfw-pink-venom.vercel.app/api/xnxx/search?query=${query}`;
+        const response = await fetch(apiUrl);
+
+        
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+            const textResponse = await response.text();
+            console.error("Non-JSON response:", textResponse);
+            return reply("The server returned an unexpected response. Please try again later.");
+        }
+
+        
+        const data = await response.json();
+
+       
+        if (!data?.result || data.result.length === 0) return reply("No XNXX videos found for your search query.");
+
+        
+        let videoInfo = "*Saviya-Md XNXX Search Results:*\n\n";
+        data.result.forEach(video => {
+            videoInfo += `┌──────────────────────\n`;
+            videoInfo += `├✨ *Title:* ${video.title || 'N/A'}\n`;
+            videoInfo += `├📊 *Info:* ${video.info || 'N/A'}\n`;
+            videoInfo += `├🔗 *Link:* ${video.link || 'N/A'}\n`;
+            videoInfo += `└──────────────────────\n\n`;
+        });
+
+        
+        await conn.sendMessage(from, { text: videoInfo }, { quoted: mek });
+
+        
+        await conn.sendMessage(from, { text: "*✅ Search completed successfully ✅*", edit: key });
+
+    } catch (e) {
+        console.error("Error:", e);
+        reply(`An error occurred: ${e.message}`);
+    }
+});
