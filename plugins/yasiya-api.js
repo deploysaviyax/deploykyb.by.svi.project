@@ -601,7 +601,7 @@ if (isGroup) {
         if (!q) return reply("Please provide a video name or a valid XNXX URL.");
 
         const isUrl = q.startsWith("http://") || q.startsWith("https://");
-        const quality = args[args.length - 1].match(/\d+p$/) ? args.pop() : "360p";  // Default to 360p
+        const quality = args[args.length - 1].match(/\d+p$/) ? args.pop() : "360p";  
         const searchQuery = args.join(" ");
         
         let xnxx_info;
@@ -626,7 +626,7 @@ if (isGroup) {
         const availableQualities = {
             "360p": videoData.files.low,
             "480p": videoData.files.high,
-            "720p": videoData.files.HLS  // Example, replace with actual key if different
+            "720p": videoData.files.HLS  
         };
         
         const videoUrl = availableQualities[quality] || availableQualities["360p"];
