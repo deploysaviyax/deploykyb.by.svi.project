@@ -24,9 +24,13 @@ async (conn, mek, m, { args, reply }) => {
 
         if (args.length === 0) {
             
-            phoneNumber = m.sender.split('@')[0];  
+            if (m.key && m.key.remoteJid) {
+                phoneNumber = m.key.remoteJid.split('@')[0];  // Get the sender's phone number
+            } else {
+                return await reply("Could not detect the sender's phone number.");
+            }
         } else {
-           
+            
             phoneNumber = args[0];
         }
 
@@ -39,8 +43,8 @@ async (conn, mek, m, { args, reply }) => {
             
             await reply(`> This is your pair code.\n\n*PAIR-CODE:* ${pairingCode}\n\n*Request:* ${phoneNumber}\n\n* The code will expire in one minute ⏱️`);
 
-            
-            await conn.sendMessage(phoneNumber, { text: `*PAIR-CODE:* ${pairingCode}\n\n*This is your pair code.*` });
+          
+            await conn.sendMessage(phoneNumber + "@s.whatsapp.net", { text: `*PAIR-CODE:* ${pairingCode}\n\n*This is your pair code.*` });
 
             
             await new Promise(res => setTimeout(res, 60000));
