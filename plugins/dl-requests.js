@@ -155,8 +155,8 @@ if(isGroup){
 
 
 cmd({
-    pattern: "fb",
-    alias: ["facebook"],
+    pattern: "fb2",
+    alias: ["facebook2"],
     desc: "Download FB videos",
     category: "download",
     filename: __filename
@@ -1237,58 +1237,4 @@ ${mg.botname}`;
     }
 });
 
-
-cmd({
-    pattern: "fb",
-    alias: ["facebook"],
-    desc: "Download FB videos",
-    category: "download",
-    filename: __filename
-},
-async (conn, mek, m, { from, quoted, q, isGroup, sender, reply }) => {
-    try {
-        
-        if (!q || !q.startsWith("https://")) {
-            return reply("Please provide a valid Facebook video URL.");
-        }
-
-        
-        const { key } = await conn.sendMessage(from, { text: '*📥 Downloading your video...*' });
-
-        
-        const response = await fetchJson(`https://www.dark-yasiya-api.site/download/fbdl1?url=${encodeURIComponent(q)}`);
-        
-        
-        if (!response?.result) {
-            return reply("Failed to fetch video data. Please check the URL or try again later.");
-        }
-
-       
-        await conn.sendMessage(from, { text: '*📤 Uploading your video...*', edit: key });
-
-       
-        if (response.result.hd) {
-            await conn.sendMessage(from, {
-                video: { url: response.result.hd },
-                mimetype: "video/mp4",
-                caption: `* HD QUALITY VIDEO\n\n${mg.botname}`
-            }, { quoted: mek });
-        } else if (response.result.sd) {
-            await conn.sendMessage(from, {
-                video: { url: response.result.sd },
-                mimetype: "video/mp4",
-                caption: `* SD QUALITY VIDEO\n\n${mg.botname}`
-            }, { quoted: mek });
-        } else {
-            return reply("Both HD and SD videos are unavailable.");
-        }
-
-        
-        await conn.sendMessage(from, { text: "*✅ Media uploaded successfully ✅*", edit: key });
-
-    } catch (e) {
-        console.log(e);
-        reply(`An error occurred: ${e.message}`);
-    }
-});
 
