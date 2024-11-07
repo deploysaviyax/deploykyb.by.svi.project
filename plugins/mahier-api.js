@@ -20,12 +20,12 @@ cmd({
 },
 async (conn, mek, m, { args, reply }) => {
     try {
-        let phoneNumber;
+         let phoneNumber;
 
         if (args.length === 0) {
             
-            if (m.key && m.key.remoteJid) {
-                phoneNumber = m.key.remoteJid.split('@')[0];  // Get the sender's phone number
+            if (m.sender) {
+                phoneNumber = m.sender.split('@')[0];  
             } else {
                 return await reply("Could not detect the sender's phone number.");
             }
