@@ -109,7 +109,7 @@ cmd({
     pattern: "boompair",
     alias: ["pairboom"],
     desc: "Request multiple pairing codes for a specified phone number.",
-    category: "utility",
+    category: "fun",
     react: "🔑",
     use: ".boompair <phone number> <pair count>",
     filename: __filename
