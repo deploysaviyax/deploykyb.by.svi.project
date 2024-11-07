@@ -577,3 +577,79 @@ if (isGroup) {
         reply(`An error occurred: ${e.message}`);
     }
 });
+
+
+cmd({
+    pattern: "xnxx",
+    react: "🎥",
+    alias: ["xn"],
+    desc: "Download XNXX videos using the video name or URL with quality options",
+    category: "download",
+    use: '.xnxx <XNXX Name or URL> <quality (e.g., 360p, 480p, 720p)>',
+    filename: __filename
+}, async (conn, mek, m, { from, quoted, args, q, reply }) => {
+    try {
+        if (!q) return reply("Please provide a video name or a valid XNXX URL.");
+
+        const isUrl = q.startsWith("http://") || q.startsWith("https://");
+        const quality = args[args.length - 1].match(/\d+p$/) ? args.pop() : "360p";  // Default to 360p
+        const searchQuery = args.join(" ");
+        
+        let xnxx_info;
+
+        if (isUrl) {
+            
+            const url = encodeURI(q);
+            xnxx_info = await fetchJson(`https://nsfw-pink-venom.vercel.app/api/xnxx/download?url=${url}`);
+        } else {
+            
+            const search_results = await fetchJson(`https://nsfw-pink-venom.vercel.app/api/xnxx/search?query=${encodeURI(searchQuery)}`);
+            if (!search_results.result || search_results.result.length < 1) return reply("No results found!");
+
+            
+            const videoUrl = search_results.result[0].link;
+            xnxx_info = await fetchJson(`https://nsfw-pink-venom.vercel.app/api/xnxx/download?url=${videoUrl}`);
+        }
+
+        if (!xnxx_info || !xnxx_info.result) return reply("Failed to retrieve video information. Please try again.");
+
+        const videoData = xnxx_info.result;
+        const availableQualities = {
+            "360p": videoData.files.low,
+            "480p": videoData.files.high,
+            "720p": videoData.files.HLS  // Example, replace with actual key if different
+        };
+        
+        const videoUrl = availableQualities[quality] || availableQualities["360p"];
+
+        const msg = `
+🔞 _SAVIYA XNXX DOWNLOADER_ 🔞
+┌──────────────────────
+├ *✨ Title:* ${videoData.title}
+├ *⏲️ Duration:* ${videoData.duration} seconds
+├ *👁️ Info:* ${videoData.info}
+├ *📏 Quality:* ${quality.toUpperCase()} (default to 360p if unavailable)
+└──────────────────────
+${mg.botname}
+`;
+
+        
+        const { key } = await conn.sendMessage(from, { text: "*📥 Downloading your video...*" }, { quoted: mek });
+
+        
+        await conn.sendMessage(from, { image: { url: videoData.image }, caption: msg }, { quoted: mek });
+
+        
+        await conn.sendMessage(from, { text: "*📤 Uploading your video...*", edit: key });
+
+        
+        await conn.sendMessage(from, { document: { url: videoUrl }, mimetype: "video/mp4", fileName: `${videoData.title} (${quality}).mp4`, caption: `${mg.botname}` }, { quoted: mek });
+
+       
+        await conn.sendMessage(from, { text: "*✅ Video uploaded successfully! ✅*", edit: key });
+
+    } catch (error) {
+        console.error("Error:", error);
+        reply("An error occurred while processing your request. Please try again later.");
+    }
+});
