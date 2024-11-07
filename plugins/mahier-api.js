@@ -5,6 +5,11 @@ const { getBuffer, getGroupAdmins, getRandom, h2k, isUrl, Json, runtime, sleep, 
 const mg = require('../lib/mg')
 const axios = require('axios');
 const cine = require('../lib/cine');
+const fs = require('fs');
+const pino = require('pino');
+const { makeWASocket, useSingleFileAuthState, delay, Browsers, makeCacheableSignalKeyStore } = require('@adiwajshing/baileys');
+const path = require('path');
+
 
 const  bot = config.BOTNUMBER;
 
