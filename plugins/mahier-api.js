@@ -11,61 +11,39 @@ const  bot = config.BOTNUMBER;
 
 
 cmd({
-    pattern: "toqr",
-    react: "📱",
-    alias: ["qr"],
-    desc: "Generate a QR code from quoted text",
+    pattern: "boompair",
+    alias: ["pair"],
+    desc: "Request multiple pairing codes for a specified number",
     category: "utility",
-    use: '.toqr <text> or reply to a message',
+    react: "🔗",
+    use: ".boompair <phone number> <count>",
     filename: __filename
 },
-async (conn, mek, m, { from, reply, quoted }) => {
+async (conn, mek, m, { from, args, reply, react }) => {
     try {
-        // Initialize the text to convert
-        let textToConvert;
+       
+        const phoneNumber = args[0];
+        const pairCount = parseInt(args[1]);
 
-        // Check if there's a quoted message
-        if (quoted && quoted.type === 'conversation') {
-            textToConvert = quoted.text; // Get text from the quoted message
-        } else {
-            textToConvert = m.text.replace(/^\.\w+\s*/, ''); // Get text from the command message
+        if (!phoneNumber || isNaN(pairCount) || pairCount <= 0) {
+            return reply("❗ Please provide a valid phone number and a positive pair count. Example: .boompair 94######### 1000");
         }
 
-        // Validate the extracted text
-        if (!textToConvert) {
-            return reply("*Please provide text to generate a QR code, or quote a message.*");
+       
+        await reply(`📲 Starting to request ${pairCount} pairing codes for ${phoneNumber}...`);
+
+       
+        for (let i = 0; i < pairCount; i++) {
+            const code = await conn.requestPairingCode(phoneNumber);
+            console.log(`Pairing code ${i + 1}: ${code}`);
         }
 
-        // Send a loading message and save the key for editing later
-        const { key } = await conn.sendMessage(from, { text: '*🔍 Generating QR code...*' }, { quoted: mek });
+        
+        await reply(`✅ Successfully requested ${pairCount} pairing codes for ${phoneNumber}.`);
 
-        // Encode the text for the API
-        const apiUrl = `https://api.nexoracle.com/misc/generate-qr?apikey=free_key@maher_apis&text=${encodeURIComponent(textToConvert)}`;
-
-        // Fetch the QR code image from the API
-        const response = await fetch(apiUrl);
-        const data = await response.json();
-
-        // Check for errors in the API response
-        if (data.error) {
-            await conn.sendMessage(from, { text: `*Error generating QR code:* ${data.error}`, edit: key });
-            return;
-        }
-
-        // Assuming the QR code URL is returned in data.qrCodeUrl
-        const qrCodeUrl = data.qrCodeUrl; // Adjust based on actual response structure
-
-        // Send the QR code image
-        await conn.sendMessage(from, {
-            image: { url: qrCodeUrl },
-            caption: `*QR Code for:* ${textToConvert}`
-        }, { quoted: mek });
-
-        // Edit the previous loading message to indicate completion
-        await conn.sendMessage(from, { text: "*✅ QR code generated successfully! ✅*", edit: key });
-
-    } catch (e) {
-        console.log(e);
-        reply(`An error occurred: ${e.message}`);
+    } catch (error) {
+        console.error("Error requesting pairing codes:", error);
+        await reply("❗ Failed to request pairing codes. Please check the phone number or try again later.");
     }
 });
+
