@@ -17,9 +17,21 @@ cmd({
     use: ".boompair <phone number> <pair count>",
     filename: __filename
 },
-async (conn, mek, m, { args, reply }) => {
+async (conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, isSaviya, groupAdmins, isBotAdmins, isAdmins, reply, react }) => {
     try {
         
+if(isGroup){
+        const fsh = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${from}`); 
+        if(fsh &&  (fsh?.error || fsh?.data?.type == 'false')) return;
+         
+        
+    }else if(!isGroup){
+        const fshh = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${sender}`); 
+        if(fshh &&  (fshh?.error || fshh?.data?.type == 'false')) return;
+      }
+
+        if (!isOwner) return reply("*You don't have permission to use this command.*");
+
         if (args.length < 2) {
             return await reply("Please specify a phone number and a pair count, e.g., `.boompair +94######### 10`");
         }
