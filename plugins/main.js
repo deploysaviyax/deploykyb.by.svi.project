@@ -19,9 +19,13 @@ cmd({
 },
 async (conn, mek, m, { from, quoted, isGroup, sender, reply }) => {
     try {
-        const config = await readEnv();
+        // Access environment variables directly
+        const AUTO_VOICE = process.env.AUTO_VOICE;
+        const LOGO = process.env.LOGO;
+        const ALIVE = process.env.ALIVE;
         
-        if (config.AUTO_VOICE === 'true') {
+        // Send audio message if AUTO_VOICE is enabled
+        if (AUTO_VOICE === 'true') {
             const audioUrl = "https://github.com/Saviyakolla/Voice_Database/raw/refs/heads/main/saviya%20main%20voice.MP3";
             await conn.sendPresenceUpdate('recording', from);
             await conn.sendMessage(from, { 
@@ -30,10 +34,11 @@ async (conn, mek, m, { from, quoted, isGroup, sender, reply }) => {
                 ptt: true 
             }, { quoted: mek });
         }
-     
+
+        // Send alive message with logo image and caption
         await conn.sendMessage(from, { 
-            image: { url: config.LOGO }, 
-            caption: config.ALIVE 
+            image: { url: LOGO }, 
+            caption: ALIVE 
         }, { quoted: mek });
 
     } catch (e) {
@@ -41,6 +46,7 @@ async (conn, mek, m, { from, quoted, isGroup, sender, reply }) => {
         console.error(e);
     }
 });
+
 
 cmd({
     pattern: "restart",
