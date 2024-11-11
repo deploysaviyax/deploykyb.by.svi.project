@@ -12,38 +12,33 @@ cmd({
     pattern: "alive",
     react: "👋",
     alias: ["online", "test", "bot"],
-    desc: "Check if the bot is online with an audio and image response.",
+    desc: "Check if the bot is online by sending an audio and image response.",
     category: "general",
     use: '.alive',
     filename: __filename
 },
-async (conn, mek, m, { from, quoted, isGroup, sender, reply }) => {
+async (conn, mek, m, { from, quoted, reply, l }) => {
     try {
-        // Access environment variables directly
-        const AUTO_VOICE = process.env.AUTO_VOICE;
-        const LOGO = process.env.LOGO;
-        const ALIVE = process.env.ALIVE;
-        
-        // Send audio message if AUTO_VOICE is enabled
-        if (AUTO_VOICE === 'true') {
-            const audioUrl = "https://github.com/Saviyakolla/Voice_Database/raw/refs/heads/main/saviya%20main%20voice.MP3";
-            await conn.sendPresenceUpdate('recording', from);
-            await conn.sendMessage(from, { 
-                audio: { url: audioUrl }, 
-                mimetype: 'audio/mpeg', 
-                ptt: true 
-            }, { quoted: mek });
-        }
+       
+        const audioUrl = "https://github.com/Saviyakolla/Voice_Database/raw/refs/heads/main/saviya%20main%20voice.MP3";
 
-        // Send alive message with logo image and caption
+        
+        await conn.sendPresenceUpdate('recording', from);
         await conn.sendMessage(from, { 
-            image: { url: LOGO }, 
-            caption: ALIVE 
+            audio: { url: audioUrl }, 
+            mimetype: 'audio/mpeg', 
+            ptt: true 
+        }, { quoted: mek });
+
+        
+        await conn.sendMessage(from, { 
+            image: { url: config.LOGO }, 
+            caption: config.ALIVE 
         }, { quoted: mek });
 
     } catch (e) {
         reply('*Error !!*');
-        console.error(e);
+        l(e);
     }
 });
 
