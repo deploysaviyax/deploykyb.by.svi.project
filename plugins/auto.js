@@ -67,28 +67,35 @@ cmd({
 // Auto Reply Command
 cmd({
   on: "body"
-}, async (conn, mek, m, { from, body, pushname }) => {
-  try {
-    const config = await readEnv();
+},    
+async (conn, mek, m, { from, body }) => {
+    try {
+        const config = await readEnv();
 
-    if (config.AUTO_REPLY === 'true') {
-      const lowerBody = body.toLowerCase();
-      const autoResponse = await AutoResponse.findOne({ trigger: lowerBody, type: 'reply' });
+        // Check if AUTO_REPLY is enabled
+        if (config.AUTO_REPLY === 'true') {
+            const lowerBody = body.toLowerCase();
 
-      if (autoResponse) {
-        try {
-          // Send auto-reply text based on auto-response configuration
-          await conn.sendMessage(from, { text: autoResponse.reply }, { quoted: mek });
-        } catch (error) {
-          console.error("Error sending auto-reply:", error);
-          await conn.sendMessage(from, { text: "⚠️ Failed to send auto-reply message." }, { quoted: mek });
+            // Fetch the auto-reply response from the database
+            const autoResponse = await AutoResponse.findOne({ trigger: lowerBody, type: 'reply' });
+
+            // Log if a matching auto-response was found
+            if (autoResponse) {
+                console.log("Auto-response found:", autoResponse.reply);
+            } else {
+                console.log("No auto-response found for:", lowerBody);
+            }
+
+            // Check if an auto-response exists and contains a reply
+            if (autoResponse && autoResponse.reply) {
+                await conn.sendMessage(from, { text: autoResponse.reply }, { quoted: mek });
+            }
         }
-      }
+    } catch (error) {
+        console.error("Error in auto-reply command:", error);
     }
-  } catch (error) {
-    console.error("Error in auto-reply command:", error);
-  }
 });
+
 
 
 
