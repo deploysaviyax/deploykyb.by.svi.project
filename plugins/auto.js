@@ -68,24 +68,27 @@ cmd({
 cmd({
   on: "body"
 },    
-async (conn, mek, m, { from, body, isOwner }) => {
+async (conn, mek, m, { from, body }) => {  // Removed `isOwner` parameter since it’s no longer needed
     try {
-        const config = await readEnv();  // Fetch configuration
+        const config = await readEnv();
 
-        if (config.AUTO_REPLY === 'true' && !isOwner) {
-            const lowerBody = body.toLowerCase();  // Convert message body to lowercase
+        
+        if (config.AUTO_REPLY === 'true') {
+            const lowerBody = body.toLowerCase();
 
-            // Fetch auto reply data from MongoDB
+            
             const autoResponse = await AutoResponse.findOne({ trigger: lowerBody, type: 'reply' });
 
-            if (autoResponse && autoResponse.reply) {  // If a match is found
-                await m.reply(autoResponse.reply);  // Reply with the response
+            
+            if (autoResponse && autoResponse.reply) {
+                await conn.sendMessage(from, { text: autoResponse.reply }, { quoted: mek });
             }
         }
     } catch (error) {
-        console.error("Error in auto-reply command: ", error);
+        console.error("Error in auto-reply command:", error);
     }
 });
+
 
 cmd({
     pattern: "addreply",
