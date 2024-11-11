@@ -6,7 +6,7 @@ const mg = require('../lib/mg')
 const cine = require('../lib/cine');
 let { getDevice } = require('@whiskeysockets/baileys');
 const translate = require('@vitalets/google-translate-api');
-
+const {Sticker, createSticker, StickerTypes} = require("wa-sticker-formatter");
 
 const  bot = config.BOTNUMBER;
 
