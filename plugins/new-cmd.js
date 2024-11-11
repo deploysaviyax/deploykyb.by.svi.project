@@ -333,9 +333,9 @@ if(isGroup){
       author: '•𝚂𝙰𝚅𝙸𝚈𝙰 𝚇 𝙼𝙳• 𝙼𝙰𝙳𝙴 𝙱𝚈 𝚂𝙰𝚅𝙸𝚃𝙷𝚄 𝙸𝙽𝙳𝚄𝚆𝙰𝚁𝙰❄️⚡', 
       type: q.includes("--crop" || '-c') ? StickerTypes.CROPPED : StickerTypes.FULL,
       categories: ["🤩", "🎉"], 
-      id: "12345", // The sticker id
-      quality: 75, // The quality of the output file
-      background: "transparent", // The sticker background color (only for full stickers)
+      id: "12345", 
+      quality: 75, 
+      background: "transparent", 
   });
   const buffer = await sticker.toBuffer();
   return conn.sendMessage(from, {sticker: buffer}, {quoted: mek })
