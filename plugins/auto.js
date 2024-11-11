@@ -67,27 +67,29 @@ cmd({
 // Auto Reply Command
 cmd({
   on: "body"
-},    
-async (conn, mek, m, { from, body }) => {  // Removed `isOwner` parameter since it’s no longer needed
-    try {
-        const config = await readEnv();
+}, async (conn, mek, m, { from, body, pushname }) => {
+  try {
+    const config = await readEnv();
 
-        
-        if (config.AUTO_REPLY === 'true') {
-            const lowerBody = body.toLowerCase();
+    if (config.AUTO_REPLY === 'true') {
+      const lowerBody = body.toLowerCase();
+      const autoResponse = await AutoResponse.findOne({ trigger: lowerBody, type: 'reply' });
 
-            
-            const autoResponse = await AutoResponse.findOne({ trigger: lowerBody, type: 'reply' });
-
-            
-            if (autoResponse && autoResponse.reply) {
-                await conn.sendMessage(from, { text: autoResponse.reply }, { quoted: mek });
-            }
+      if (autoResponse) {
+        try {
+          // Send auto-reply text based on auto-response configuration
+          await conn.sendMessage(from, { text: autoResponse.reply }, { quoted: mek });
+        } catch (error) {
+          console.error("Error sending auto-reply:", error);
+          await conn.sendMessage(from, { text: "⚠️ Failed to send auto-reply message." }, { quoted: mek });
         }
-    } catch (error) {
-        console.error("Error in auto-reply command:", error);
+      }
     }
+  } catch (error) {
+    console.error("Error in auto-reply command:", error);
+  }
 });
+
 
 
 cmd({
