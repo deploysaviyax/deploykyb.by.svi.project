@@ -298,3 +298,71 @@ if(isGroup){
     }
 });
 
+
+cmd({
+    pattern: "sticker",
+    react: "🔮",
+    alias: ["s","stic"],
+    category: "convert",
+    use: '.sticker <Reply to image>',
+    filename: __filename
+},
+async(conn, mek, m,{from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants,  isSaviya, groupAdmins, isBotAdmins, isAdmins, reply,react}) => {
+
+try{
+
+if(isGroup){
+        const fsh = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${from}`); 
+        if(fsh &&  (fsh?.error || fsh?.data?.type == 'false')) return;
+         
+        
+    }else if(!isGroup){
+        const fshh = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${sender}`); 
+        if(fshh &&  (fshh?.error || fshh?.data?.type == 'false')) return;
+      }
+
+    const isQuotedViewOnce = m.quoted ? (m.quoted.type === 'viewOnceMessage') : false
+    const isQuotedImage = m.quoted ? ((m.quoted.type === 'imageMessage') || (isQuotedViewOnce ? (m.quoted.msg.type === 'imageMessage') : false)) : false
+    const isQuotedVideo = m.quoted ? ((m.quoted.type === 'videoMessage') || (isQuotedViewOnce ? (m.quoted.msg.type === 'videoMessage') : false)) : false
+    const isQuotedSticker = m.quoted ? (m.quoted.type === 'stickerMessage') : false
+     if ((m.type === 'imageMessage') || isQuotedImage) {
+      var nameJpg = getRandom('')
+      isQuotedImage ? await m.quoted.download(nameJpg) : await m.download(nameJpg)
+    let sticker = new Sticker(nameJpg + '.jpg', {
+      pack: pushname, 
+      author: '•𝚂𝙰𝚅𝙸𝚈𝙰 𝚇 𝙼𝙳• 𝙼𝙰𝙳𝙴 𝙱𝚈 𝚂𝙰𝚅𝙸𝚃𝙷𝚄 𝙸𝙽𝙳𝚄𝚆𝙰𝚁𝙰❄️⚡
+♘☷
+➣𝙲𝙾𝙽𝚃𝙰𝙲𝚃۝⃟̥̩̩
+➣𝚠𝚊.𝚖𝚎/94722617699', 
+      type: q.includes("--crop" || '-c') ? StickerTypes.CROPPED : StickerTypes.FULL,
+      categories: ["🤩", "🎉"], 
+      id: "12345", // The sticker id
+      quality: 75, // The quality of the output file
+      background: "transparent", // The sticker background color (only for full stickers)
+  });
+  const buffer = await sticker.toBuffer();
+  return conn.sendMessage(from, {sticker: buffer}, {quoted: mek })
+}  else if ( isQuotedSticker ) { 
+
+    var nameWebp = getRandom('')
+    await m.quoted.download(nameWebp)
+  let sticker = new Sticker(nameWebp + '.webp', {
+    pack: pushname, 
+    author: '•𝚂𝙰𝚅𝙸𝚈𝙰 𝚇 𝙼𝙳• 𝙼𝙰𝙳𝙴 𝙱𝚈 𝚂𝙰𝚅𝙸𝚃𝙷𝚄 𝙸𝙽𝙳𝚄𝚆𝙰𝚁𝙰❄️⚡
+♘☷
+➣𝙲𝙾𝙽𝚃𝙰𝙲𝚃۝⃟̥̩̩
+➣𝚠𝚊.𝚖𝚎/94722617699', 
+    type: q.includes("--crop" || '-c') ? StickerTypes.CROPPED : StickerTypes.FULL,
+    categories: ["🤩", "🎉"], 
+    id: "12345", 
+    quality: 75, 
+    background: "transparent", 
+});
+const buffer = await sticker.toBuffer();
+return conn.sendMessage(from, {sticker: buffer}, {quoted: mek })
+}else return await  reply(imgmsg)
+} catch (e) {
+    reply('Error !!')
+    console.log(e)
+}
+})
