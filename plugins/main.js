@@ -11,29 +11,37 @@ const  bot = config.BOTNUMBER;
 cmd({
     pattern: "alive",
     react: "👋",
-    alias: ["online","test","bot"],
-    desc: "Check bot online or no.",
+    alias: ["online", "test", "bot"],
+    desc: "Check if the bot is online with an audio and image response.",
     category: "general",
     use: '.alive',
     filename: __filename
 },
-async(conn, mek, m,{from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants,  isSaviya, groupAdmins, isBotAdmins, isAdmins, reply,react}) => {
-try{
-    if(isGroup){
-        const fsh = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${from}`); 
-        if(fsh &&  (fsh?.error || fsh?.data?.type == 'false')) return;
-         
+async (conn, mek, m, { from, quoted, isGroup, sender, reply }) => {
+    try {
+        const config = await readEnv();
         
-    }else if(!isGroup){
-        const fshh = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${sender}`); 
-        if(fshh &&  (fshh?.error || fshh?.data?.type == 'false')) return;
-      }
-await conn.sendMessage(from, { image: { url: config.LOGO }, caption: config.ALIVE }, { quoted: mek })
-} catch (e) {
-reply('*Error !!*')
-l(e)
-}
-})
+        if (config.AUTO_VOICE === 'true') {
+            const audioUrl = "https://github.com/Saviyakolla/Voice_Database/raw/refs/heads/main/saviya%20main%20voice.MP3";
+            await conn.sendPresenceUpdate('recording', from);
+            await conn.sendMessage(from, { 
+                audio: { url: audioUrl }, 
+                mimetype: 'audio/mpeg', 
+                ptt: true 
+            }, { quoted: mek });
+        }
+     
+        await conn.sendMessage(from, { 
+            image: { url: config.LOGO }, 
+            caption: config.ALIVE 
+        }, { quoted: mek });
+
+    } catch (e) {
+        reply('*Error !!*');
+        console.error(e);
+    }
+});
+
 cmd({
     pattern: "restart",
     react: "♻️",
