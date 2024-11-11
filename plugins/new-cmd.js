@@ -330,10 +330,7 @@ if(isGroup){
       isQuotedImage ? await m.quoted.download(nameJpg) : await m.download(nameJpg)
     let sticker = new Sticker(nameJpg + '.jpg', {
       pack: pushname, 
-      author: '•𝚂𝙰𝚅𝙸𝚈𝙰 𝚇 𝙼𝙳• 𝙼𝙰𝙳𝙴 𝙱𝚈 𝚂𝙰𝚅𝙸𝚃𝙷𝚄 𝙸𝙽𝙳𝚄𝚆𝙰𝚁𝙰❄️⚡
-♘☷
-➣𝙲𝙾𝙽𝚃𝙰𝙲𝚃۝⃟̥̩̩
-➣𝚠𝚊.𝚖𝚎/94722617699', 
+      author: '•𝚂𝙰𝚅𝙸𝚈𝙰 𝚇 𝙼𝙳• 𝙼𝙰𝙳𝙴 𝙱𝚈 𝚂𝙰𝚅𝙸𝚃𝙷𝚄 𝙸𝙽𝙳𝚄𝚆𝙰𝚁𝙰❄️⚡', 
       type: q.includes("--crop" || '-c') ? StickerTypes.CROPPED : StickerTypes.FULL,
       categories: ["🤩", "🎉"], 
       id: "12345", // The sticker id
@@ -348,10 +345,7 @@ if(isGroup){
     await m.quoted.download(nameWebp)
   let sticker = new Sticker(nameWebp + '.webp', {
     pack: pushname, 
-    author: '•𝚂𝙰𝚅𝙸𝚈𝙰 𝚇 𝙼𝙳• 𝙼𝙰𝙳𝙴 𝙱𝚈 𝚂𝙰𝚅𝙸𝚃𝙷𝚄 𝙸𝙽𝙳𝚄𝚆𝙰𝚁𝙰❄️⚡
-♘☷
-➣𝙲𝙾𝙽𝚃𝙰𝙲𝚃۝⃟̥̩̩
-➣𝚠𝚊.𝚖𝚎/94722617699', 
+    author: '•𝚂𝙰𝚅𝙸𝚈𝙰 𝚇 𝙼𝙳• 𝙼𝙰𝙳𝙴 𝙱𝚈 𝚂𝙰𝚅𝙸𝚃𝙷𝚄 𝙸𝙽𝙳𝚄𝚆𝙰𝚁𝙰❄️⚡', 
     type: q.includes("--crop" || '-c') ? StickerTypes.CROPPED : StickerTypes.FULL,
     categories: ["🤩", "🎉"], 
     id: "12345", 
