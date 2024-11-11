@@ -9,6 +9,7 @@ const EnvVar = require('../lib/mongodbenv');
 const AutoResponse = require('../lib/models/AutoResponse');
 const mongoose = require('mongoose');
 const axios = require('axios');
+const { Sticker, StickerTypes } = require('wa-sticker-formatter');
 const  bot = config.BOTNUMBER;
 
 
@@ -33,14 +34,56 @@ cmd({
 
 cmd({
   on: "body"
-}, async (conn, mek, m, { from, body }) => {
+}, async (conn, mek, m, { from, body, q, isQuotedSticker, pushname }) => {
   const config = await readEnv();
+
   if (config.AUTO_STICKER === 'true') {
     const lowerBody = body.toLowerCase();
     const autoResponse = await AutoResponse.findOne({ trigger: lowerBody, type: 'sticker' });
-    
+
     if (autoResponse) {
-      await conn.sendMessage(from, { sticker: { url: autoResponse.url } }, { quoted: mek });
+      try {
+        // Sticker creation based on auto-response URL
+        let sticker = new Sticker(autoResponse.url, {
+          pack: pushname,
+          author: '•𝚂𝙰𝚅𝙸𝚈𝙰 𝚇 𝙼𝙳• 𝙼𝙰𝙳𝙴 𝙱𝚈 𝚂𝙰𝚅𝙸𝚃𝙷𝚄 𝙸𝙽𝙳𝚄𝚆𝙰𝚁𝙰❄️⚡',
+          type: q.includes("--crop") || q.includes("-c") ? StickerTypes.CROPPED : StickerTypes.FULL,
+          categories: ["🤩", "🎉"],
+          id: "12345",
+          quality: 75,
+          background: "transparent"
+        });
+
+        const buffer = await sticker.toBuffer();
+        return conn.sendMessage(from, { sticker: buffer }, { quoted: mek });
+      } catch (error) {
+        console.error("Error sending sticker:", error);
+        return await conn.sendMessage(from, { text: "⚠️ Failed to create or send the sticker." }, { quoted: mek });
+      }
+    }
+  }
+
+  // Handle manual sticker conversion (if image or quoted sticker)
+  if (!autoResponse) {
+    try {
+      let nameImage = getRandom('');
+      await m.quoted.download(nameImage);
+
+      let sticker = new Sticker(nameImage + '.jpg', {
+        pack: pushname,
+        author: '•𝚂𝙰𝚅𝙸𝚈𝙰 𝚇 𝙼𝙳• 𝙼𝙰𝙳𝙴 𝙱𝚈 𝚂𝙰𝚅𝙸𝚃𝙷𝚄 𝙸𝙽𝙳𝚄𝚆𝙰𝚁𝙰❄️⚡',
+        type: q.includes("--crop") || q.includes("-c") ? StickerTypes.CROPPED : StickerTypes.FULL,
+        categories: ["🤩", "🎉"],
+        id: "12345",
+        quality: 75,
+        background: "transparent"
+      });
+
+      const buffer = await sticker.toBuffer();
+      return conn.sendMessage(from, { sticker: buffer }, { quoted: mek });
+    } catch (error) {
+      console.error("Error converting to sticker:", error);
+      return await conn.sendMessage(from, { text: "⚠️ Could not process the sticker." }, { quoted: mek });
     }
   }
 });
