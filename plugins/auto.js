@@ -62,30 +62,6 @@ cmd({
       }
     }
   }
-
-  // Handle manual sticker conversion (if image or quoted sticker)
-  if (!autoResponse) {
-    try {
-      let nameImage = getRandom('');
-      await m.quoted.download(nameImage);
-
-      let sticker = new Sticker(nameImage + '.jpg', {
-        pack: pushname,
-        author: '•𝚂𝙰𝚅𝙸𝚈𝙰 𝚇 𝙼𝙳• 𝙼𝙰𝙳𝙴 𝙱𝚈 𝚂𝙰𝚅𝙸𝚃𝙷𝚄 𝙸𝙽𝙳𝚄𝚆𝙰𝚁𝙰❄️⚡',
-        type: q.includes("--crop") || q.includes("-c") ? StickerTypes.CROPPED : StickerTypes.FULL,
-        categories: ["🤩", "🎉"],
-        id: "12345",
-        quality: 75,
-        background: "transparent"
-      });
-
-      const buffer = await sticker.toBuffer();
-      return conn.sendMessage(from, { sticker: buffer }, { quoted: mek });
-    } catch (error) {
-      console.error("Error converting to sticker:", error);
-      return await conn.sendMessage(from, { text: "⚠️ Could not process the sticker." }, { quoted: mek });
-    }
-  }
 });
 
 // Auto Reply Command
