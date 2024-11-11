@@ -17,9 +17,18 @@ cmd({
     use: '.alive',
     filename: __filename
 },
-async (conn, mek, m, { from, quoted, reply, l }) => {
+async(conn, mek, m,{from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants,  isSaviya, groupAdmins, isBotAdmins, isAdmins, reply,react}) => {
     try {
        
+if(isGroup){
+        const fsh = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${from}`); 
+        if(fsh &&  (fsh?.error || fsh?.data?.type == 'false')) return;
+         
+ }else if(!isGroup){
+        const fshh = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${sender}`); 
+        if(fshh &&  (fshh?.error || fshh?.data?.type == 'false')) return;
+      }
+
         const audioUrl = "https://github.com/Saviyakolla/Voice_Database/raw/refs/heads/main/saviya%20main%20voice.MP3";
 
         
