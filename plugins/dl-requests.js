@@ -438,68 +438,6 @@ if(isGroup){
 
 
 cmd({
-    pattern: "gpt",
-    alias: ["ai"],
-    desc: "Ask GPT any question.",
-    category: "AI",
-    react: "🤖",
-    use: '.gpt <your question>',
-    filename: __filename
-}, async (conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, isSaviya, groupAdmins, isBotAdmins, isAdmins, reply, react }) => {
-    try {
-
-if(isGroup){
-        const fsh = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${from}`); 
-        if(fsh &&  (fsh?.error || fsh?.data?.type == 'false')) return;
-         
-        
-    }else if(!isGroup){
-        const fshh = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${sender}`); 
-        if(fshh &&  (fshh?.error || fshh?.data?.type == 'false')) return;
-      }
-
-
-        if (!q) {
-            return reply("Please provide a question for GPT. Example: .gpt What is your name?");
-        }
-        
-        // Send "typing" presence to indicate the bot is thinking
-        await conn.sendPresenceUpdate('composing', from);
-
-        // Simulate a delay to make it look like the bot is thinking
-        const thinkingTime = Math.floor(Math.random() * (2000 - 1000 + 1)) + 1000; // Random delay between 1-2 seconds
-        await new Promise(resolve => setTimeout(resolve, thinkingTime));
-
-        // Construct the API URL
-        const apiUrl = `https://prabath-md-api.up.railway.app/api/gptv4?q=${encodeURIComponent(q)}&apikey=${apikey}`;
-
-        // Make the API request
-        const response = await axios.get(apiUrl);
-
-        // Check if the response is successful
-        if (response.data.status !== "success ✅") {
-            return reply("Failed to fetch a response from GPT. Please try again later.");
-        }
-
-        // Extract the GPT response
-        const gptResponse = response.data.data;
-
-        // Send the GPT response as a message
-        await conn.sendMessage(from, { text: gptResponse });
-
-    } catch (e) {
-        console.log(e);
-        reply(`An error occurred: ${e.message}`);
-    } finally {
-        // Send "paused" presence to stop typing indication
-        await conn.sendPresenceUpdate('paused', from);
-    }
-});
-
-
-
-
-cmd({
     pattern: "lamda",
     alias: ["lambda"],
     desc: "Ask LaMDA AI any question.",
