@@ -742,39 +742,48 @@ cmd({
 }, async (conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, isSaviya, groupAdmins, isBotAdmins, isAdmins, reply, react }) => {
     try {
   
+if (isGroup) {
+            const groupCheck = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${from}`);
+            if (groupCheck && (groupCheck?.error || groupCheck?.data?.type == 'false')) return;
+        } else {
+            const userCheck = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${sender}`);
+            if (userCheck && (userCheck?.error || userCheck?.data?.type == 'false')) return;
+        }
+
+
         if (!q) {
             return reply("Please provide a question for GPT. Example: .ai What is AI?");
         }
 
-        // Indicate the bot is typing
+        
         await conn.sendPresenceUpdate('composing', from);
 
-        // Simulate a "thinking" delay
-        const thinkingTime = Math.floor(Math.random() * 1000) + 1000; // Random delay between 1-2 seconds
+
+        const thinkingTime = Math.floor(Math.random() * 1000) + 1000; 
         await new Promise(resolve => setTimeout(resolve, thinkingTime));
 
-        // Construct the API URL with the user's question
+       
         const apiUrl = `https://www.dark-yasiya-api.site/ai/chatgpt?q=${encodeURIComponent(q)}`;
 
-        // Make the API request
+        
         const response = await axios.get(apiUrl);
 
-        // Check if the response is successful
+        
         if (response.data.status !== true) {
             return reply("Failed to fetch a response from GPT AI. Please try again later.");
         }
 
-        // Extract the GPT response
+       
         const gptResponse = response.data.result;
 
-        // Send the GPT response as a message
+        
         await conn.sendMessage(from, { text: gptResponse });
 
     } catch (e) {
         console.log(e);
         reply(`An error occurred: ${e.message}`);
     } finally {
-        // Stop typing indication
+        
         await conn.sendPresenceUpdate('paused', from);
     }
 });
