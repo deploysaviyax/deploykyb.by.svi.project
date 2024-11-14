@@ -730,6 +730,7 @@ if (isGroup) {
 });
 
 
+
 cmd({
     pattern: "gpt",
     alias: ["ai"],
@@ -738,42 +739,32 @@ cmd({
     react: "🤖",
     use: '.gpt <your question>',
     filename: __filename
-}, async (conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, isSaviya, groupAdmins, isBotAdmins, isAdmins, reply, react }) => {
+}, async (conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, pushname, isOwner, reply, react }) => {
     try {
-        
-    if (isGroup) {
-            const groupCheck = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${from}`);
-            if (groupCheck && (groupCheck?.error || groupCheck?.data?.type == 'false')) return;
-        } else {
-            const userCheck = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${sender}`);
-            if (userCheck && (userCheck?.error || userCheck?.data?.type == 'false')) return;
-        }
-
-       
+      
+        // Verify if question is provided
         if (!q) return reply("Please provide a question for GPT. Example: .gpt What is your name?");
 
-       
+        // Send "composing" presence to indicate bot is processing
         await conn.sendPresenceUpdate('composing', from);
-        const thinkingTime = Math.floor(Math.random() * 1000) + 1000; // 1-2 seconds
-        await new Promise(resolve => setTimeout(resolve, thinkingTime));
+        await new Promise(resolve => setTimeout(resolve, Math.floor(Math.random() * 1000) + 1000)); // 1-2 second delay
 
-       
+        // GPT API request
         const apiUrl = `https://www.dark-yasiya-api.site/ai/chatgpt?q=${encodeURIComponent(q)}`;
         const response = await axios.get(apiUrl);
 
-       
-        if (!response.data.status) {
-            return reply("Failed to fetch a response from GPT. Please try again later.");
+        // Check response status and reply with GPT's response
+        if (response.data.status) {
+            const gptResponse = response.data.result;
+            await conn.sendMessage(from, { text: gptResponse }, { quoted });
+        } else {
+            reply("Failed to fetch a response from GPT. Please try again later.");
         }
-
-       
-        const gptResponse = response.data.result;
-        await conn.sendMessage(from, { text: gptResponse }, { quoted });
-
-    } catch (e) {
-        console.error("GPT Command Error:", e);
-        reply(`An error occurred: ${e.message}`);
+        
+    } catch (error) {
+        console.error("GPT Command Error:", error);
+        reply(`An error occurred: ${error.message}`);
     } finally {
-        await conn.sendPresenceUpdate('paused', from); 
+        await conn.sendPresenceUpdate('paused', from); // End "typing" status
     }
 });
