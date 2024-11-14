@@ -732,39 +732,50 @@ if (isGroup) {
 
 
 cmd({
-    pattern: "gpt",
-    alias: ["ai"],
-    desc: "Ask GPT any question.",
+    pattern: "ai",
+    alias: ["gpt"],
+    desc: "Ask GPT AI any question.",
     category: "AI",
     react: "🤖",
-    use: '.gpt <your question>',
+    use: '.ai <your question>',
     filename: __filename
-}, async (conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, pushname, isOwner, reply, react }) => {
+}, async (conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, isSaviya, groupAdmins, isBotAdmins, isAdmins, reply, react }) => {
     try {
-      
-        // Verify if question is provided
-        if (!q) return reply("Please provide a question for GPT. Example: .gpt What is your name?");
+  
+        if (!q) {
+            return reply("Please provide a question for GPT. Example: .ai What is AI?");
+        }
 
-        // Send "composing" presence to indicate bot is processing
+        // Indicate the bot is typing
         await conn.sendPresenceUpdate('composing', from);
-        await new Promise(resolve => setTimeout(resolve, Math.floor(Math.random() * 1000) + 1000)); // 1-2 second delay
 
-        // GPT API request
+        // Simulate a "thinking" delay
+        const thinkingTime = Math.floor(Math.random() * 1000) + 1000; // Random delay between 1-2 seconds
+        await new Promise(resolve => setTimeout(resolve, thinkingTime));
+
+        // Construct the API URL with the user's question
         const apiUrl = `https://www.dark-yasiya-api.site/ai/chatgpt?q=${encodeURIComponent(q)}`;
+
+        // Make the API request
         const response = await axios.get(apiUrl);
 
-        // Check response status and reply with GPT's response
-        if (response.data.status) {
-            const gptResponse = response.data.result;
-            await conn.sendMessage(from, { text: gptResponse }, { quoted });
-        } else {
-            reply("Failed to fetch a response from GPT. Please try again later.");
+        // Check if the response is successful
+        if (response.data.status !== true) {
+            return reply("Failed to fetch a response from GPT AI. Please try again later.");
         }
-        
-    } catch (error) {
-        console.error("GPT Command Error:", error);
-        reply(`An error occurred: ${error.message}`);
+
+        // Extract the GPT response
+        const gptResponse = response.data.result;
+
+        // Send the GPT response as a message
+        await conn.sendMessage(from, { text: gptResponse });
+
+    } catch (e) {
+        console.log(e);
+        reply(`An error occurred: ${e.message}`);
     } finally {
-        await conn.sendPresenceUpdate('paused', from); // End "typing" status
+        // Stop typing indication
+        await conn.sendPresenceUpdate('paused', from);
     }
 });
+
