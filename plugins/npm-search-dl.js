@@ -8,6 +8,8 @@ const mega = require('megajs');
 const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
+const FormData = require('form-data');
+const fileType = require("file-type")
 
 const imgbbUrl = 'https://imgbb.com/';
 const uploadUrl = 'https://imgbb.com/json';
