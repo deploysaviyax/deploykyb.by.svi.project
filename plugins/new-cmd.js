@@ -240,7 +240,7 @@ cmd({
                 deviceType = 'WhatsApp iOS';
                 break;
             default:
-                deviceType = 'Unknown Device';
+                deviceType = 'Web WhatsApp (Baileys-Wa-Web-Api)';
                 break;
         }
 
