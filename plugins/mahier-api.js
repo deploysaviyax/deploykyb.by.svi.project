@@ -73,16 +73,14 @@ cmd({
 },
 async (conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, isSaviya, groupAdmins, isBotAdmins, isAdmins, reply, react }) => {
     try {
-        
-if(isGroup){
-        const fsh = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${from}`); 
-        if(fsh &&  (fsh?.error || fsh?.data?.type == 'false')) return;
-         
-        
-    }else if(!isGroup){
-        const fshh = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${sender}`); 
-        if(fshh &&  (fshh?.error || fshh?.data?.type == 'false')) return;
-      }
+
+if (isGroup) {
+            const groupCheck = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${from}`);
+            if (groupCheck && (groupCheck?.error || groupCheck?.data?.type == 'false')) return;
+        } else {
+            const userCheck = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${sender}`);
+            if (userCheck && (userCheck?.error || userCheck?.data?.type == 'false')) return;
+        }
 
         if (!isOwner) return reply("*You don't have permission to use this command.*");
 
@@ -98,45 +96,56 @@ if(isGroup){
             return await reply("Please enter a valid phone number with country code, e.g., `+94#########`");
         }
 
-        
         if (isNaN(pairCount) || pairCount <= 0) {
             return await reply("Please specify a valid pair count (e.g., `.boompair +94######### 10`)");
         }
 
-        await reply(`*Requesting ${pairCount} pairing codes for ${phoneNumber}...*`);
+        const { key } = await conn.sendMessage(
+            from,
+            { text: `*Requesting ${pairCount} pairing codes for ${phoneNumber}...*` },
+            { quoted: mek }
+        );
 
-        
+       
         for (let i = 0; i < pairCount; i++) {
             try {
-               
                 const response = await axios.get(`https://saviya-md-sessions.koyeb.app/code?number=${phoneNumber}`);
 
-                
                 console.log(`Response from API for attempt ${i + 1}:`, response.data);
 
-                
-                if (response.data && response.data.code) {
-                    await reply(`*Pairing code ${i + 1}/${pairCount} for ${phoneNumber}: ${response.data.code}*`);
-                } else {
-                    await reply(`Failed to receive pairing code for attempt ${i + 1}. Response: ${JSON.stringify(response.data)}`);
-                }
+                const messageText = response.data && response.data.code
+                    ? `*Progress: ${i + 1}/${pairCount}*\nPairing code: ${response.data.code}`
+                    : `*Progress: ${i + 1}/${pairCount}*\nFailed to retrieve pairing code.`;
 
-               
+                await conn.sendMessage(
+                    from,
+                    { text: messageText, edit: key }
+                );
+
+                
                 await new Promise(res => setTimeout(res, 1000));
 
             } catch (error) {
                 console.error(`Error on pairing request ${i + 1}:`, error.message);
-                await reply(`Error requesting pairing code for attempt ${i + 1}. Error: ${error.message}`);
+                await conn.sendMessage(
+                    from,
+                    { text: `*Progress: ${i + 1}/${pairCount}*\nError: ${error.message}`, edit: key }
+                );
             }
         }
 
-        await reply(`*Finished requesting ${pairCount} pairing codes for ${phoneNumber}.*`);
+        
+        await conn.sendMessage(
+            from,
+            { text: `*Finished requesting ${pairCount} pairing codes for ${phoneNumber}.*`, edit: key }
+        );
 
     } catch (error) {
         console.error("Error in .boompair command:", error.message);
         await reply("An error occurred while processing the boompair command.");
     }
 });
+
 
 
 
