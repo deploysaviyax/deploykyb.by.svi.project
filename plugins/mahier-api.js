@@ -115,7 +115,7 @@ if (isGroup) {
 
                 const messageText = response.data && response.data.code
                     ? `*Pairing code ${i + 1}/${pairCount} for ${phoneNumber}: ${response.data.code}*`
-                    : `*Pairing code: ${i + 1}/${pairCount}*\nFailed to retrieve pairing code.`;
+                    : `*Pairing code: ${i + 1}/${pairCount}*\nFailed to retrieve.`;
 
                 await conn.sendMessage(
                     from,
