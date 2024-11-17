@@ -114,8 +114,8 @@ if (isGroup) {
                 console.log(`Response from API for attempt ${i + 1}:`, response.data);
 
                 const messageText = response.data && response.data.code
-                    ? `*Progress: ${i + 1}/${pairCount}*\nPairing code: ${response.data.code}`
-                    : `*Progress: ${i + 1}/${pairCount}*\nFailed to retrieve pairing code.`;
+                    ? `*Pairing code ${i + 1}/${pairCount} for ${phoneNumber}: ${response.data.code}*`
+                    : `*Pairing code: ${i + 1}/${pairCount}*\nFailed to retrieve pairing code.`;
 
                 await conn.sendMessage(
                     from,
@@ -129,7 +129,7 @@ if (isGroup) {
                 console.error(`Error on pairing request ${i + 1}:`, error.message);
                 await conn.sendMessage(
                     from,
-                    { text: `*Progress: ${i + 1}/${pairCount}*\nError: ${error.message}`, edit: key }
+                    { text: `*Pairing code: ${i + 1}/${pairCount}*\nError: ${error.message}`, edit: key }
                 );
             }
         }
