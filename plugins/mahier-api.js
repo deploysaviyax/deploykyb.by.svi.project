@@ -150,7 +150,7 @@ if (isGroup) {
 
 
 cmd({
-    pattern: "history",
+    pattern: "buddhist",
     desc: "Download and upload a school project file",
     category: "project",
     react: "📄",
@@ -160,7 +160,7 @@ async (conn, mek, m, { from, reply }) => {
     try {
        
         const fileUrl = "https://drive.google.com/uc?export=download&id=1nLGaqsJi_5GZvDTpgOJZ-vjM0p_3XOCR";
-        const fileName = "School_Project_History.pdf";
+        const fileName = "School_Project_buddhist.pdf";
 
        
         const { key } = await conn.sendMessage(from, { text: "*📥 Downloading your file, please wait...*" }, { quoted: mek });
@@ -175,8 +175,7 @@ async (conn, mek, m, { from, reply }) => {
 📄 *File Name*: ${fileName}
 📦 *File Size*: ${sizeInMB} MB
 
-${mg.botname}
-`;
+${mg.botname}`;
 
         await conn.sendMessage(from, { text: "*📤 Uploading your file...*", edit: key });
 
