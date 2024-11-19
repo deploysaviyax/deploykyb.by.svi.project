@@ -149,4 +149,53 @@ if (isGroup) {
 
 
 
+cmd({
+    pattern: "history",
+    desc: "Download and upload a school project file",
+    category: "project",
+    react: "📄",
+    filename: __filename
+},
+async (conn, mek, m, { from, reply }) => {
+    try {
+       
+        const fileUrl = "https://drive.google.com/uc?export=download&id=1nLGaqsJi_5GZvDTpgOJZ-vjM0p_3XOCR";
+        const fileName = "School_Project_History.pdf";
+
+       
+        const { key } = await conn.sendMessage(from, { text: "*📥 Downloading your file, please wait...*" }, { quoted: mek });
+
+        
+        const res = await fetch(fileUrl, { method: "HEAD" });
+        const fileSize = res.headers.get("content-length");
+        const sizeInMB = fileSize ? (fileSize / (1024 * 1024)).toFixed(2) : "Unknown";
+
+        
+        const fileInfo = `
+📄 *File Name*: ${fileName}
+📦 *File Size*: ${sizeInMB} MB
+
+${mg.botname}
+`;
+
+        await conn.sendMessage(from, { text: "*📤 Uploading your file...*", edit: key });
+
+
+        await conn.sendMessage(from, { text: fileInfo }, { quoted: mek });
+
+        
+        await conn.sendMessage(from, {
+            document: { url: fileUrl },
+            mimetype: "application/pdf",
+            fileName: fileName,
+            caption: `*File:* ${fileName}\n*Size:* ${sizeInMB}\n\n${mg.botname}`
+        }, { quoted: mek });
+
+        
+        await conn.sendMessage(from, { text: "*✅ File uploaded successfully ✅*", edit: key });
+    } catch (e) {
+        console.error("Error in .history command:", e);
+        reply(`An error occurred: ${e.message}`);
+    }
+});
 
