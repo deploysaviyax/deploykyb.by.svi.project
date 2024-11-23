@@ -1045,20 +1045,23 @@ if (isGroup) {
 
         const { key } = await conn.sendMessage(from, { text: '*📥 Downloading your song...*' }, { quoted: mek });
         
-        const apiUrl = `https://api-pink-venom.vercel.app/api/ytmp3?url=${encodeURIComponent(videoUrl)}`;
-        const response = await fetch(apiUrl);
-        const data = await response.json();
+       const apiUrl = `https://api-pink-venom.vercel.app/api/ytmp3?url=${encodeURIComponent(videoUrl)}`;
+       const response = await fetch(apiUrl);
+       const data = await response.json();
 
-        if (!data.status) return reply("Failed to fetch song details. Please try again.");
+if (!data.status || !data.result || !data.result.download_url) {
+    return reply("Failed to fetch song details. Please try again.");
+}
 
-        const { title, download_url, file_size = "Unknown" } = data;
-        if (!videoData) {
-            const yts = require("yt-search");
-            const search = await yts(q);
-            videoData = search.videos[0];
-        }
-        
-        const desc = `
+const dl_link = data.result.download_url;
+
+if (!videoData) {
+    const yts = require("yt-search");
+    const search = await yts(q);
+    videoData = search.videos[0];
+}
+
+const desc = `
 🎡 *SAVIYA-X-MD-SONG-DOWNLOADER* 🎡
 
 ┌───────────────────
@@ -1070,15 +1073,13 @@ if (isGroup) {
 └───────────────────
 ${mg.botname}`;
 
-        
-        await conn.sendMessage(from, { image: { url: videoData.thumbnail }, caption: desc }, { quoted: mek });
+await conn.sendMessage(from, { image: { url: videoData.thumbnail }, caption: desc }, { quoted: mek });
 
-        
-        await conn.sendMessage(from, { text: "*📤 Uploading your song...*", edit: key });
+await conn.sendMessage(from, { text: "*📤 Uploading your song...*", edit: key });
 
-        
-        await conn.sendMessage(from, { audio: { url: download_url }, mimetype: "audio/mpeg" }, { quoted: mek });
-        await conn.sendMessage(from, { document: { url: download_url }, mimetype: "audio/mpeg", fileName: `${title}.mp3`, caption: `${mg.botname}` }, { quoted: mek });
+await conn.sendMessage(from, { audio: { url: dl_link }, mimetype: "audio/mpeg" }, { quoted: mek });
+
+await conn.sendMessage(from, { document: { url: dl_link }, mimetype: "audio/mpeg", fileName: `${videoData.title}.mp3`, caption: `${mg.botname}` }, { quoted: mek });
 
         
         await sleep(1000);
