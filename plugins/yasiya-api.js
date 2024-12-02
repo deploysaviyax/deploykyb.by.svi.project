@@ -36,7 +36,7 @@ cmd({
 
         
         const query = encodeURIComponent(q); // Use encodeURIComponent for safe URL encoding
-        const apiUrl = `https://dark-yasiya-api-new.vercel.app/search/xvideo?text=${query}`;
+        const apiUrl = `https://www.dark-yasiya-api.site/search/xvideo?text=${query}`;
 
        
         const response = await fetch(apiUrl);
@@ -110,16 +110,16 @@ if (isGroup) {
         if (isUrl) {
             
             const url = encodeURI(q);
-            xv_info = await fetchJson(`https://dark-yasiya-api-new.vercel.app/download/xvideo?url=${url}`);
+            xv_info = await fetchJson(`https://www.dark-yasiya-api.site/download/xvideo?url=${url}`);
         } else {
            
-            const xv_list = await fetchJson(`https://dark-yasiya-api-new.vercel.app/search/xvideo?q=${encodeURI(q)}`);
+            const xv_list = await fetchJson(`https://www.dark-yasiya-api.site/search/xvideo?q=${encodeURI(q)}`);
             if (!xv_list.result || xv_list.result.length < 1) {
                 return reply("No results found!");
             }
 
             
-            xv_info = await fetchJson(`https://dark-yasiya-api-new.vercel.app/download/xvideo?url=${xv_list.result[0].url}`);
+            xv_info = await fetchJson(`https://www.dark-yasiya-api.site/download/xvideo?url=${xv_list.result[0].url}`);
         }
 
         
@@ -193,7 +193,7 @@ if (isGroup) {
         await new Promise(resolve => setTimeout(resolve, thinkingTime));
 
         
-        const apiUrl = `https://dark-yasiya-api-new.vercel.app/ai/gemini?q=${encodeURIComponent(q)}`;
+        const apiUrl = `https://www.dark-yasiya-api.site/ai/gemini?q=${encodeURIComponent(q)}`;
 
         
         const response = await axios.get(apiUrl);
@@ -246,7 +246,7 @@ if (isGroup) {
 
       
         const query = encodeURI(q);
-        const apiUrl = `https://dark-yasiya-api-new.vercel.app/download/piniimg?text=${query}`;
+        const apiUrl = `https://www.dark-yasiya-api.site/download/piniimg?text=${query}`;
         const response = await fetch(apiUrl);
         const data = await response.json();
 
@@ -306,7 +306,7 @@ if (isGroup) {
 
         
         const query = encodeURI(q);
-        const apiUrl = `https://dark-yasiya-api-new.vercel.app/download/wallpaper?text=${query}&page=1`;
+        const apiUrl = `https://www.dark-yasiya-api.site/download/wallpaper?text=${query}&page=1`;
 
         
         const response = await fetch(apiUrl);
@@ -364,7 +364,7 @@ if (isGroup) {
         const { key } = await conn.sendMessage(from, { text: '*📥 Downloading your file...*' });
 
         
-        const response = await fetchJson(`https://dark-yasiya-api-new.vercel.app/download/mfire?url=${encodeURIComponent(q)}`);
+        const response = await fetchJson(`https://www.dark-yasiya-api.site/download/mfire?url=${encodeURIComponent(q)}`);
         
         
         if (!response.status || !response.result?.dl_link) {
@@ -421,7 +421,7 @@ if (isGroup) {
         await new Promise(resolve => setTimeout(resolve, Math.floor(Math.random() * 1000) + 1000));
 
         
-        const apiUrl = "https://dark-yasiya-api-new.vercel.app/news/ada";
+        const apiUrl = "https://www.dark-yasiya-api.site/news/ada";
         const response = await axios.get(apiUrl);
 
         
@@ -788,3 +788,61 @@ if (isGroup) {
     }
 });
 
+
+cmd({
+    pattern: "yts2",
+    react: "🔍",
+    alias: ["youtubesearch2"],
+    desc: "Search for YouTube videos using a query",
+    category: "search",
+    use: ".yts2 <search query>",
+    filename: __filename
+}, async (conn, mek, m, { from, quoted, q, reply }) => {
+    try {
+        // Validate input
+        if (!q) return reply("Please provide a search query.");
+
+        // Initial message
+        const key = await conn.sendMessage(from, { text: "*🔍 Searching YouTube...*" }, { quoted: mek });
+
+        // API call
+        const apiUrl = `https://test-api-utto.osc-fr1.scalingo.io/api/search?query=${encodeURIComponent(q)}`;
+        const response = await fetch(apiUrl);
+
+        if (!response.ok) {
+            console.error(`API Error: ${response.status} ${response.statusText}`);
+            return reply("Failed to fetch results. Please try again later.");
+        }
+
+        const data = await response.json();
+
+        // Check for results
+        if (!data || !Array.isArray(data.results) || data.results.length === 0) {
+            return reply("No YouTube videos found for your search query.");
+        }
+
+        // Format results
+        let videoInfo = "*Saviya-Md YouTube Search Results:*\n\n";
+        data.results.forEach(video => {
+            const views = video.views ? video.views.toLocaleString() : "N/A"; // Ensure views is defined
+            videoInfo += `┌──────────────────────\n`;
+            videoInfo += `├✨ *Title:* ${video.title || 'N/A'}\n`;
+            videoInfo += `├🕒 *Duration:* ${video.duration?.timestamp || 'N/A'}\n`;
+            videoInfo += `├👀 *Views:* ${views}\n`;
+            videoInfo += `├📆 *Uploaded:* ${video.ago || 'N/A'}\n`;
+            videoInfo += `├🔗 *Video URL:* ${video.url || 'N/A'}\n`;
+            videoInfo += `├📸 *Author:* ${video.author?.name || 'N/A'} (${video.author?.url || 'N/A'})\n`;
+            videoInfo += `└──────────────────────\n\n`;
+        });
+
+        // Send results
+        await conn.sendMessage(from, { text: videoInfo }, { quoted: mek });
+
+        // Edit success message
+        await conn.sendMessage(from, { text: "*✅ Search completed successfully ✅*", edit: key });
+
+    } catch (e) {
+        console.error(e);
+        reply(`An error occurred: ${e.message}`);
+    }
+});
