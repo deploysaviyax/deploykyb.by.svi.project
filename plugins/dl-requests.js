@@ -1092,84 +1092,91 @@ await conn.sendMessage(from, { document: { url: dl_link }, mimetype: "audio/mpeg
 });
 
 cmd({
-    pattern: "video",
-    react: "🎥",
-    alias: ["dlvideo"],
-    desc: "Download YouTube video by name or URL with quality selection",
-    category: "download",
-    use: '.video <YouTube URL> or .video <Video Name>, <Quality>',
-    filename: __filename
+  pattern: "video",
+  react: "🎥",
+  alias: ["dlvideo"],
+  desc: "Download YouTube video by name or URL with quality selection",
+  category: "download",
+  use: '.video <YouTube URL> or .video <Video Name>, <Quality>',
+  filename: __filename
 }, async (conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, isSaviya, groupAdmins, isBotAdmins, isAdmins, reply, react }) => {
-    try {
-        if (isGroup) {
+  try {
+
+if (isGroup) {
             const groupCheck = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${from}`);
-            if (groupCheck && (groupCheck?.error || groupCheck?.data?.type === 'false')) return;
+            if (groupCheck && (groupCheck?.error || groupCheck?.data?.type == 'false')) return;
         } else {
             const userCheck = await fetchJson(`${config.DOWNLOADSAPI}${bot}/${sender}`);
-            if (userCheck && (userCheck?.error || userCheck?.data?.type === 'false')) return;
+            if (userCheck && (userCheck?.error || userCheck?.data?.type == 'false')) return;
         }
 
-        const input = args.join(" ");
-        if (!input) return reply("Please provide a YouTube URL or video name.");
+    const input = args.join(" ");
+    if (!input) return reply("Please provide a YouTube URL or video name.");
 
-        let quality = "360p";
-        let query = input;
-        if (input.includes(",")) {
-            [query, quality] = input.split(",").map(s => s.trim());
-        }
+    let quality = "360p";
+    let query = input;
+    if (input.includes(",")) {
+      [query, quality] = input.split(",").map(s => s.trim());
+    }
 
-        let videoData, videoUrl;
+    let videoData, videoUrl;
 
-        if (query.startsWith("www")) {
-            videoUrl = query;
-        } else {
-            const searchApiUrl = `https://dark-yasiya-api-new.vercel.app/search/yt?q=${encodeURIComponent(query)}`;
-            const searchResponse = await fetch(searchApiUrl);
-            const searchResult = await searchResponse.json();
+    
+    if (query.startsWith("www") || query.startsWith("http")) {
+      videoUrl = query;
+    } else {
+      const searchApiUrl = `https://api.nexoracle.com/downloader/yt-search?apikey=free_key@maher_apis&q=${encodeURIComponent(query)}`;
+      const searchResponse = await fetch(searchApiUrl);
+      const searchResult = await searchResponse.json();
 
-            if (!searchResult.status || !searchResult.result.data.length) {
-                return reply("No results found. Please try a different query.");
-            }
+      if (!searchResult.result.length) {
+        return reply("No results found. Please try a different query.");
+      }
 
-            videoData = searchResult.result.data[0];
-            videoUrl = videoData.url;
-        }
+      videoData = searchResult.result[0];
+      videoUrl = videoData.url;
+    }
 
-        const { key } = await conn.sendMessage(from, { text: '*📥 Downloading your video...*' }, { quoted: mek });
+   
+    const { key } = await conn.sendMessage(from, { text: '*📥 Downloading your video...*' }, { quoted: mek });
 
-        const downloadApiUrl = `https://prabath-ytdl-scrapper.koyeb.app/api/mp4?url=${encodeURIComponent(videoUrl)}&format=${quality}`;
-        const downloadResponse = await fetch(downloadApiUrl);
-        const downloadData = await downloadResponse.json();
+    
+    const downloadApiUrl = `https://api-ayo.vercel.app/api/ytdl?url=${encodeURIComponent(videoUrl)}`;
+    const downloadResponse = await fetch(downloadApiUrl);
+    const downloadData = await downloadResponse.json();
 
-        if (!downloadData.dl_link) return reply("Failed to fetch video. Please try again.");
+    if (!downloadData.status || !downloadData.result.length) return reply("Failed to fetch video. Please try again.");
 
-        const { title, timestamp, views, ago, image } = videoData || {};
-        const videoInfo = `
+    const selectedVideo = downloadData.result.find(item => item[`mp4-${quality.toLowerCase()}-true`]);
+    if (!selectedVideo) return reply(`Quality "${quality}" not available. Please try a different quality.`);
+
+    const { url: downloadUrl, size } = selectedVideo[`mp4-${quality.toLowerCase()}-true`];
+
+    const { title, timestamp, ago, views, thumbnail } = videoData || {};
+    const videoInfo = `
 🔅 *SAVIYA-X-MD-VIDEO-DOWNLOADER* 🔅
 
 ┌───────────────────
 ├ *✨Title:* ${title || "N/A"}
-├ *⏱️Time:* ${timestamp || "N/A"}
-├ *⚖️Ago:* ${ago || "N/A"}
+├ *⏱️Duration:* ${timestamp || "N/A"}
+├ *⚖️Uploaded:* ${ago || "N/A"}
 ├ *📍Views:* ${views || "N/A"}
 ├ *🖇️URL:* ${videoUrl}
 └───────────────────
 ${mg.botname}`;
 
-        await conn.sendMessage(from, { image: { url: image }, caption: videoInfo }, { quoted: mek });
+    await conn.sendMessage(from, { image: { url: thumbnail }, caption: videoInfo }, { quoted: mek });
 
-        await conn.sendMessage(from, { text: "*📤 Uploading your video...*", edit: key });
+    await conn.sendMessage(from, { text: "*📤 Uploading your video...*", edit: key });
 
-        await conn.sendMessage(from, { video: { url: downloadData.dl_link }, mimetype: "video/mp4" }, { quoted: mek });
+    await conn.sendMessage(from, { video: { url: downloadUrl }, mimetype: "video/mp4" }, { quoted: mek });
 
-        await conn.sendMessage(from, { document: { url: downloadData.dl_link }, mimetype: "video/mp4",fileName: `${title}.mp4`,caption: `${mg.botname}` }, { quoted: mek });
+    await conn.sendMessage(from, { document: { url: downloadUrl }, mimetype: "video/mp4", fileName: `${title}.mp4`, caption: `${mg.botname}` }, { quoted: mek });
 
-        await conn.sendMessage(from, { text: "*✅ Media uploaded successfully ✅*", edit: key });
+    await conn.sendMessage(from, { text: "*✅ Media uploaded successfully ✅*", edit: key });
 
-    } catch (e) {
-        console.log(e);
-        reply(`An error occurred: ${e.message}`);
-    }
+  } catch (e) {
+    console.error(e);
+    reply(`An error occurred: ${e.message}`);
+  }
 });
-
-
