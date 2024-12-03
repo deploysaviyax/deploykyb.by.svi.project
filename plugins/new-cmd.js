@@ -22,24 +22,26 @@ async (conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, 
     if (!isSaviya && !isOwner) return reply("*You don't have permission to use this command.*");
 
     try {
-        const code = args.join(" "); 
+        const code = args.join(" ");
 
-        const context = {
-            conn,
-            mek,
-            from,
-            sender,
-            quoted,
-            reply,
-            m,
-            console,
+      
+        const dynamicImport = async () => {
+           
+            const fetch = await import('node-fetch');
+            const fs = await import('fs');
+            const path = await import('path');
+
             
+            return new Function('require', 'fetch', 'fs', 'path', `
+                const require = (module) => {
+                    return eval(\`import('\${module}')\`);
+                };
+                ${code}
+            `).call({ require, fetch, fs, path });
         };
 
-       
-        const script = new vm.Script(code);
-        const result = script.runInNewContext(context); 
-
+        const result = await dynamicImport();
+        
        
         if (typeof result === 'object') {
             reply(JSON.stringify(result, null, 2));
@@ -47,11 +49,11 @@ async (conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, 
             reply(result ? result.toString() : 'No result');
         }
     } catch (e) {
-       
         reply(`Error: ${e.message}`);
         console.error(e);
     }
 });
+
 
 
 cmd({
