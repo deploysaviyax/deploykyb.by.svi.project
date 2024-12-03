@@ -18,41 +18,39 @@ cmd({
     category: "main",
     use: '',
 },
-async (conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, isSaviya, groupAdmins, isBotAdmins, isAdmins, reply, react }) => {
+async(conn, mek, m,{from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants,  isSaviya, groupAdmins, isBotAdmins, isAdmins, reply,react}) => {
     if (!isSaviya && !isOwner) return reply("*You don't have permission to use this command.*");
 
     try {
+        
         const code = args.join(" ");
 
-      
-        const dynamicImport = async () => {
-           
-            const fetch = await import('node-fetch');
-            const fs = await import('fs');
-            const path = await import('path');
-
-            
-            return new Function('require', 'fetch', 'fs', 'path', `
-                const require = (module) => {
-                    return eval(\`import('\${module}')\`);
-                };
-                ${code}
-            `).call({ require, fetch, fs, path });
+        const context = {
+            conn,
+            mek,
+            from,
+            sender,
+            quoted,
+            reply,
+            m
         };
 
-        const result = await dynamicImport();
         
+        const result = await (new Function('with (this) { return eval(arguments[0]); }')).call(context, code);
        
         if (typeof result === 'object') {
             reply(JSON.stringify(result, null, 2));
         } else {
             reply(result ? result.toString() : 'No result');
         }
+
     } catch (e) {
+        
         reply(`Error: ${e.message}`);
         console.error(e);
     }
 });
+
 
 
 
