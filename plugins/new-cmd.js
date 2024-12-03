@@ -7,6 +7,7 @@ const cine = require('../lib/cine');
 let { getDevice } = require('@whiskeysockets/baileys');
 const translate = require('@vitalets/google-translate-api');
 const {Sticker, createSticker, StickerTypes} = require("wa-sticker-formatter");
+const vm = require('vm');
 
 const  bot = config.BOTNUMBER;
 
@@ -17,12 +18,11 @@ cmd({
     category: "main",
     use: '',
 },
-async(conn, mek, m,{from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants,  isSaviya, groupAdmins, isBotAdmins, isAdmins, reply,react}) => {
+async (conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, isSaviya, groupAdmins, isBotAdmins, isAdmins, reply, react }) => {
     if (!isSaviya && !isOwner) return reply("*You don't have permission to use this command.*");
 
     try {
-        
-        const code = args.join(" ");
+        const code = args.join(" "); 
 
         const context = {
             conn,
@@ -31,20 +31,23 @@ async(conn, mek, m,{from, l, quoted, body, isCmd, command, args, q, isGroup, sen
             sender,
             quoted,
             reply,
-            m
+            m,
+            console,
+            
         };
 
-        
-        const result = await (new Function('with (this) { return eval(arguments[0]); }')).call(context, code);
+       
+        const script = new vm.Script(code);
+        const result = script.runInNewContext(context); 
+
        
         if (typeof result === 'object') {
             reply(JSON.stringify(result, null, 2));
         } else {
             reply(result ? result.toString() : 'No result');
         }
-
     } catch (e) {
-        
+       
         reply(`Error: ${e.message}`);
         console.error(e);
     }
